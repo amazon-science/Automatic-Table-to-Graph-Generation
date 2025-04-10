@@ -45,7 +45,7 @@ Check commands in the `scripts/autog.sh`.
 
 ## 3. Run GML
 
-Check `scripts/run.sh`.
+Check commands in the `scripts/run.sh`.
 
 ## How to apply AutoG to your own dataset?
 
