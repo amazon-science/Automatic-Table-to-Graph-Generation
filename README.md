@@ -41,7 +41,7 @@ The input of `AutoG` is the data file of ``simple``. However, no schema informat
 
 ## 2. Run `AutoG`
 
-Check `scripts/autog.sh`.
+Check commands in the `scripts/autog.sh`.
 
 ## 3. Run GML
 
