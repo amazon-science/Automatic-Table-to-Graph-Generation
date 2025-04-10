@@ -1,0 +1,24 @@
+{
+    "paper": {
+        "paperID": ("category", "This column is probably representing the ID from 1 to n of papers in the system, as it has a lot of unique values."),
+        "label": ("category", "This column represents a label associated with each paper. It has a limited number of unique values."),
+        "feat": ("float", "This column is multi-dimensional. Probably an embedding type. Usually not of interest."),
+        "year": ("category", "This column represents the year of publication of the paper. It has a limited number of unique values, suggesting a year.")
+    },
+    "Cites": {
+        "paper_cite": ("category", "This column is probably representing the ID of the citing paper. It has a lot of unique values."),
+        "paper_cited": ("category", "This column is probably representing the ID of the cited paper. It has a lot of unique values.")
+    },
+    "HasTopic": {
+        "paper_name": ("category", "This column is probably representing the ID from 1 to n of papers in the system, as it has a lot of unique values."),
+        "field_of_study": ("category", "This column represents the field of study. It has a limited number of unique values.")
+    },
+    "AffiliatedWith": {
+        "author": ("category", "This column is probably representing the ID of the author. It has a lot of unique values."),
+        "institution": ("category", "This column represents the institution. It has a limited number of unique values.")
+    },
+    "Writes": {
+        "paper_writer": ("category", "This column is probably representing the ID of the author who wrote the paper. It has a lot of unique values."),
+        "arxiv_id": ("category", "This column is probably representing the ID from 1 to n of papers in the system, as it has a lot of unique values.")
+    }
+}

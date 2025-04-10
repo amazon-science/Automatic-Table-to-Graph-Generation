@@ -1,0 +1,10 @@
+lr : 0.01
+batch_size : 8192
+eval_batch_size : 8192
+fanouts : [25, 20]
+hid_size : 64
+feat_encode_size : 128
+dropout : 0.5
+predictor: 
+  num_layers: 2
+patience: 20

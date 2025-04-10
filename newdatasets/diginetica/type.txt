@@ -1,0 +1,43 @@
+{
+    "QueryResult": {
+        "queryId": ("category", "This column likely represents unique query identifiers, as it has a large number of unique values."),
+        "itemId": ("category", "This column likely represents unique item identifiers, as it has a large number of unique values."),
+        "timestamp": ("datetime", "This column represents the timestamp of query-related events, containing full datetime values.")
+    },
+    "Click": {
+        "queryId": ("category", "This column likely represents unique query identifiers, as it has a large number of unique values."),
+        "itemId": ("category", "This column likely represents unique item identifiers, as it has a large number of unique values."),
+        "timestamp": ("datetime", "This column represents the timestamp of click-related events, containing full datetime values.")
+    },
+    "View": {
+        "view_session": ("category", "This column likely represents unique session identifiers for views, as it has a significant number of unique values."),
+        "view_user": ("category", "This column likely represents unique user identifiers for views, as it has many unique values but also contains missing values."),
+        "itemId": ("category", "This column likely represents unique item identifiers, as it has a large number of unique values."),
+        "timestamp": ("datetime", "This column represents the timestamp of view-related events, containing full datetime values.")
+    },
+    "Purchase": {
+        "purchase_session": ("category", "This column likely represents unique session identifiers for purchases, as it has a significant number of unique values."),
+        "purchaser": ("category", "This column likely represents unique purchaser identifiers, as it has many unique values but also contains missing values."),
+        "ordernumber": ("category", "This column likely represents unique order numbers, as it has many unique values."),
+        "itemId": ("category", "This column likely represents unique item identifiers, as it has a large number of unique values."),
+        "timestamp": ("datetime", "This column represents the timestamp of purchase-related events, containing full datetime values.")
+    },
+    "QuerySearchstringToken": {
+        "queryId": ("category", "This column likely represents unique query identifiers, as it has a significant number of unique values."),
+        "search_token": ("category", "This column represents a list of search tokens associated with a query, making it a multi-category field.")
+    },
+    "Query": {
+        "queryId": ("category", "This column likely represents unique query identifiers, as each value appears to be unique."),
+        "query_sessionId": ("category", "This column likely represents session identifiers for queries, as it has a moderate number of unique values."),
+        "query_userId": ("category", "This column likely represents user identifiers associated with queries, but contains missing values."),
+        "duration": ("float", "This column likely represents the duration of a query event, as it contains numerical values with many unique values."),
+        "categoryId": ("category", "This column likely represents a categorical classification for queries, as the number of unique values is limited."),
+        "timestamp": ("datetime", "This column represents the timestamp of query-related events, containing full datetime values.")
+    },
+    "Product": {
+        "itemId": ("category", "This column likely represents unique product identifiers, as each value appears to be unique."),
+        "categoryId": ("category", "This column represents product categories, as the number of unique values is limited."),
+        "pricelog2": ("float", "This column represents a numerical price transformation (likely log-scaled), as it contains numerical values with some distinct values."),
+        "name_tokens": ("multi_category", "This column contains a list of tokens associated with product names, making it a multi-category field.")
+    }
+}

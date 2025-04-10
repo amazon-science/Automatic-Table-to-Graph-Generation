@@ -1,0 +1,351 @@
+Analysis for Table Badges:
+  Column: Id
+    Max: 645089
+    Min: 1
+    Mode: 1
+    Sampled Values: [106688 488777  49644 493057 397331]
+    Number of Total Values: 590833
+    Number of Unique Values: 590833
+  Column: UserId
+    Max: 395861
+    Min: 2
+    Mode: 919
+    Sampled Values: [ 43979 101507  30755 189963 309879]
+    Number of Total Values: 590833
+    Number of Unique Values: 178768
+  Column: Name
+    Mode: Student
+    Sampled Values: ['Yearling...', 'Commentator...', 'Yearling...', 'Student...', 'Popular Question...']
+    Number of Total Values: 590833
+    Number of Unique Values: 389
+  Column: Date
+    Max: 2023-09-03 04:52:35
+    Min: 2010-07-19 19:39:07
+    Mode: 2014-09-24 20:23:07
+    Sampled Values: ['2018-06-08T23:53:46.000000' '2023-04-24T23:18:00.000000'
+ '2017-11-07T10:26:18.000000' '2019-09-20T20:30:00.000000'
+ '2019-10-04T17:40:25.000000']
+    Number of Total Values: 590833
+    Number of Unique Values: 412198
+  Column: Class
+    Max: 3
+    Min: 1
+    Mode: 3
+    Sampled Values: [3 3 3 3 2]
+    Number of Total Values: 590833
+    Number of Unique Values: 3
+  Column: TagBased
+    Max: 1
+    Min: 0
+    Mode: 0
+    Sampled Values: [0 0 0 0 0]
+    Number of Total Values: 590833
+    Number of Unique Values: 2
+
+Analysis for Table Users:
+  Column: Id
+    Max: 395861
+    Min: -1
+    Mode: -1
+    Sampled Values: [371576 373929 247818 161929 121622]
+    Number of Total Values: 333784
+    Number of Unique Values: 333784
+  Column: CreationDate
+    Max: 2023-09-03 04:50:59
+    Min: 2010-07-19 06:55:27
+    Mode: 2010-07-19 19:09:42
+    Sampled Values: ['2014-06-13T23:45:52.000000' '2017-10-29T16:00:30.000000'
+ '2018-12-04T14:39:38.000000' '2016-07-04T05:13:01.000000'
+ '2017-03-18T18:35:16.000000']
+    Number of Total Values: 333784
+    Number of Unique Values: 333565
+  Column: Location
+    Mode: India
+    Sampled Values: [None, None, None, 'India...', None]
+    Number of Total Values: 333784
+    Number of Unique Values: 14204
+  Column: AboutMe
+    Mode: <p>Spam removed by moderator</p>
+
+    Sampled Values: [None, None, '<p>I currently work as a front-end developer for a...', None, None]
+    Number of Total Values: 333784
+    Number of Unique Values: 57558
+
+Analysis for Table PostHistory:
+  Column: Id
+    Max: 2493018
+    Min: 1
+    Mode: 1
+    Sampled Values: [2403169 2413421 1639212 1144007   42321]
+    Number of Total Values: 1486886
+    Number of Unique Values: 1486886
+  Column: PostHistoryTypeId
+    Max: 66
+    Min: 1
+    Mode: 2
+    Sampled Values: [ 5  1 50  2  1]
+    Number of Total Values: 1486886
+    Number of Unique Values: 30
+  Column: PostId
+    Max: 625559
+    Min: 1
+    Mode: 493264
+    Sampled Values: [ 41743 519551 455908 447168 157943]
+    Number of Total Values: 1486886
+    Number of Unique Values: 415913
+  Column: CreationDate
+    Max: 2023-09-03 04:51:33
+    Min: 2009-02-02 14:21:12
+    Mode: 2020-06-11 14:32:37
+    Sampled Values: ['2019-08-26T10:43:08.000000' '2013-10-29T18:43:12.000000'
+ '2015-09-08T02:14:23.000000' '2021-11-10T03:26:38.000000'
+ '2017-11-04T05:02:36.000000']
+    Number of Total Values: 1486886
+    Number of Unique Values: 954880
+  Column: Text
+    Mode: {"Voters":[{"Id":919,"DisplayName":"whuber"}]}
+    Sampled Values: ['<chi-squared-test><proportion><contingency-tables>...', 'So I have two datasets, og.data and newdata.df.  I...', 'I am struggeling with my current science project o...', 'I present a supporting view of mine on random numb...', '[Lotfi A. Zadeh][1], who not only coined the terms...']
+    Number of Total Values: 1486886
+    Number of Unique Values: 1203346
+  Column: Comment
+    Mode: edited tags
+    Sampled Values: ['https://twitter.com/StackStats/status/153441492436...', None, None, 'fixed typo...', None]
+    Number of Total Values: 1486886
+    Number of Unique Values: 149356
+  Column: UserName
+    Mode: Community
+    Sampled Values: ['PatternRecognition...', 'kjetil b halvorsen...', 'D.W....', nan, 'The Pointer...']
+    Number of Total Values: 1486886
+    Number of Unique Values: 91142
+
+Analysis for Table Vote:
+  Column: Id
+    Max: 2099264
+    Min: 1
+    Mode: 1
+    Sampled Values: [1871684  247511 1021438 1055132  319078]
+    Number of Total Values: 1673836
+    Number of Unique Values: 1673836
+  Column: PostId
+    Max: 625558
+    Min: 1
+    Mode: 140579
+    Sampled Values: [  8667 333991 103762 608512 271071]
+    Number of Total Values: 1673836
+    Number of Unique Values: 425239
+  Column: VoteTypeId
+    Max: 16
+    Min: 1
+    Mode: 2
+    Sampled Values: [2 2 2 2 2]
+    Number of Total Values: 1673836
+    Number of Unique Values: 14
+  Column: CreationDate
+    Max: 2023-09-03 00:00:00
+    Min: 2009-02-02 00:00:00
+    Mode: 2018-07-11 00:00:00
+    Sampled Values: ['2012-04-25T00:00:00.000000' '2015-05-21T00:00:00.000000'
+ '2012-03-13T00:00:00.000000' '2016-09-07T00:00:00.000000'
+ '2019-07-18T00:00:00.000000']
+    Number of Total Values: 1673836
+    Number of Unique Values: 4818
+  Column: BountyAmount
+    Max: 500.0
+    Min: 0.0
+    Mode: 50.0
+    Sampled Values: [nan nan nan nan nan]
+    Number of Total Values: 1673836
+    Number of Unique Values: 15
+  Column: UserName
+    Mode: Glen_b
+    Sampled Values: [nan, 'sega_sai...', nan, nan, nan]
+    Number of Total Values: 1673836
+    Number of Unique Values: 3152
+
+Analysis for Table Comments:
+  Column: Id
+    Max: 1166153
+    Min: 1
+    Mode: 1
+    Sampled Values: [1072910  920932 1059963  863890  875318]
+    Number of Total Values: 794597
+    Number of Unique Values: 794597
+  Column: PostId
+    Max: 625558
+    Min: 1
+    Mode: 386853
+    Sampled Values: [ 53060 248257 155076 108073 569944]
+    Number of Total Values: 794597
+    Number of Unique Values: 236834
+  Column: Text
+    Mode: Please clarify your specific problem or provide additional details to highlight exactly what you need. As it's currently written, it's hard to tell exactly what you're asking.
+    Sampled Values: ['@ttnphns: Do you mean the answer of G5W is incorre...', '@AlecosPapadopoulos Oh yeah, I see the problem....', 'If all the training data is labelled that way, you...', "But....I'm trying to show that they're the same!...", 'Please explain further, what the different program...']
+    Number of Total Values: 794597
+    Number of Unique Values: 789607
+  Column: CreationDate
+    Max: 2023-09-03 04:53:01
+    Min: 2009-02-02 14:45:19
+    Mode: 2020-08-29 02:30:41
+    Sampled Values: ['2014-06-04T15:37:04.000000' '2023-02-11T16:38:31.000000'
+ '2018-10-30T13:34:22.000000' '2017-10-31T22:50:17.000000'
+ '2016-09-14T16:37:22.000000']
+    Number of Total Values: 794597
+    Number of Unique Values: 793478
+  Column: CommentedUserId
+    Max: 395842.0
+    Min: -1.0
+    Mode: 919.0
+    Sampled Values: [  8141.    919. 101354.  35224. 261061.]
+    Number of Total Values: 794597
+    Number of Unique Values: 67147
+
+Analysis for Table Posts:
+  Column: Id
+    Max: 1863370
+    Min: 1
+    Mode: 1
+    Sampled Values: [ 96252 133028 554094 545530 437771]
+    Number of Total Values: 506601
+    Number of Unique Values: 506601
+  Column: PostTypeId
+    Max: 7.0
+    Min: 1.0
+    Mode: 1.0
+    Sampled Values: [nan nan nan  2.  1.]
+    Number of Total Values: 506601
+    Number of Unique Values: 7
+  Column: AcceptedAnswerId
+    Max: 625491.0
+    Min: 5.0
+    Mode: 5.0
+    Sampled Values: [nan nan nan nan nan]
+    Number of Total Values: 506601
+    Number of Unique Values: 69774
+  Column: CreationDate
+    Max: 2023-09-03 04:49:38
+    Min: 2009-02-02 14:21:12
+    Mode: 2013-08-11 17:01:05
+    Sampled Values: ['2022-03-20T18:46:14.000000' '2017-04-19T00:21:59.000000'
+ '2017-09-14T15:30:08.000000' '2018-12-11T17:53:59.000000'
+ '2016-07-17T16:30:14.000000']
+    Number of Total Values: 506601
+    Number of Unique Values: 413976
+  Column: Body
+    Mode: <p>I have managed to capture this pattern using pytorch DeepAR for two nbinom values (n=9,p=0.5) and (n=4,p=0.75) with period of 8 hours for each. The two signals are interleaved like below.
+<a href="https://i.stack.imgur.com/cUAP4.png" rel="nofollow noreferrer"><img src="https://i.stack.imgur.com/cUAP4.png" alt="enter image description here" /></a></p>
+<p>Run My_demo.ipynb to see the prediction of means of the two frequencies in the following repo.</p>
+<p><a href="https://github.com/JosePeeterson/2_freq_nbinom_LSTM/tree/master" rel="nofollow noreferrer">https://github.com/JosePeeterson/2_freq_nbinom_LSTM/tree/master</a></p>
+
+    Sampled Values: ['<p>I have a time series which exhibits the classic...', "<p>No, that isn't valid.</p>\n\n<p>For instance, sup...", None, None, '<p>The IQR is the center 50% of the observations. ...']
+    Number of Total Values: 506601
+    Number of Unique Values: 415313
+  Column: OwnerUserId
+    Max: 395845.0
+    Min: -1.0
+    Mode: 805.0
+    Sampled Values: [  4505.     nan 143759.  60261.  28191.]
+    Number of Total Values: 506601
+    Number of Unique Values: 106130
+  Column: Title
+    Mode: Normal Distribution
+    Sampled Values: ['Can you test statistical significance in a single ...', None, None, 'Pearson correlation and partitioning data...', None]
+    Number of Total Values: 506601
+    Number of Unique Values: 209576
+  Column: LastEditorUserId
+    Max: 395823.0
+    Min: -1.0
+    Mode: 11887.0
+    Sampled Values: [    nan     nan     nan  56284. 239481.]
+    Number of Total Values: 506601
+    Number of Unique Values: 35082
+  Column: ParentId
+    Max: 625557.0
+    Min: 1.0
+    Mode: 726.0
+    Sampled Values: [    nan     nan     nan     nan 398623.]
+    Number of Total Values: 506601
+    Number of Unique Values: 141201
+
+Analysis for Table PostLink:
+  Column: Id
+    Max: 17458686
+    Min: 108
+    Mode: 108
+    Sampled Values: [ 1848939 16425543 13312709  2854493  5974766]
+    Number of Total Values: 103969
+    Number of Unique Values: 103969
+  Column: CreationDate
+    Max: 2023-09-03 02:44:59
+    Min: 2010-07-21 14:47:34
+    Mode: 2013-02-18 03:03:17
+    Sampled Values: ['2014-02-21T12:10:48.000000' '2018-08-24T09:40:57.000000'
+ '2022-05-28T18:22:06.000000' '2014-08-21T06:55:28.000000'
+ '2016-12-07T15:49:11.000000']
+    Number of Total Values: 103969
+    Number of Unique Values: 87265
+  Column: PostId
+    Max: 625554
+    Min: 4
+    Mode: 439905
+    Sampled Values: [108207 176715  12067 401499 476762]
+    Number of Total Values: 103969
+    Number of Unique Values: 64789
+  Column: RelatedPostId
+    Max: 1863370
+    Min: 1
+    Mode: 312780
+    Sampled Values: [430192  94622    539  14210  26450]
+    Number of Total Values: 103969
+    Number of Unique Values: 34064
+  Column: LinkTypeId
+    Max: 3
+    Min: 1
+    Mode: 1
+    Sampled Values: [1 3 1 1 1]
+    Number of Total Values: 103969
+    Number of Unique Values: 2
+
+Analysis for Table Tag:
+  Column: Id
+    Max: 4825
+    Min: 1
+    Mode: 1
+    Sampled Values: [1180 4067   93  243 4800]
+    Number of Total Values: 1597
+    Number of Unique Values: 1597
+  Column: TagName
+    Mode: 2d
+    Sampled Values: ['multiple-comparisons...', 'contingency-tables...', 'weighted-mean...', 'bayes-rule...', 'matrix-calculus...']
+    Number of Total Values: 1597
+    Number of Unique Values: 1597
+  Column: ExcerptPostId
+    Max: 623462.0
+    Min: 2331.0
+    Mode: 2331.0
+    Sampled Values: [ 51952.  14286.  67588. 326703.  63376.]
+    Number of Total Values: 1597
+    Number of Unique Values: 1212
+  Column: WikiPostId
+    Max: 623461.0
+    Min: 2254.0
+    Mode: 2254.0
+    Sampled Values: [312235.  32710.     nan     nan     nan]
+    Number of Total Values: 1597
+    Number of Unique Values: 1212
+
+Analysis for Table PostTag:
+  Column: PostId
+    Max: 625557
+    Min: 1
+    Mode: 31
+    Sampled Values: [469737  89659 239431 262693   9499]
+    Number of Total Values: 648577
+    Number of Unique Values: 209721
+  Column: TagId
+    Max: 4825
+    Min: 1
+    Mode: 41
+    Sampled Values: [ 94 501 994 188  94]
+    Number of Total Values: 648577
+    Number of Unique Values: 1597
+

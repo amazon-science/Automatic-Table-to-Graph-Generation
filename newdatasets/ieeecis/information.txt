@@ -1,0 +1,324 @@
+Analysis for Table Transaction:
+  Column: ProductCode
+    Mode: W
+    Sampled Values: ['W' 'W' 'W' 'C' 'W']
+    Number of Total Values: 590540
+    Number of Unique Values: 5
+  Column: card_meta_info_1
+    Max: 18396
+    Min: 1000
+    Mode: 7919
+    Sampled Values: [ 5433 13780  3343 17188 12839]
+    Number of Total Values: 590540
+    Number of Unique Values: 13553
+  Column: card_meta_info_2
+    Max: nan
+    Min: nan
+    Mode: 321.0
+    Sampled Values: [271. 127. 181. 545. 170.]
+    Number of Total Values: 590540
+    Number of Unique Values: 500
+  Column: card_meta_info_3
+    Max: nan
+    Min: nan
+    Mode: 150.0
+    Sampled Values: [150. 150. 150. 150. 150.]
+    Number of Total Values: 590540
+    Number of Unique Values: 114
+  Column: card_meta_info_4
+    Mode: visa
+    Sampled Values: ['visa' 'visa' 'visa' 'visa' 'mastercard']
+    Number of Total Values: 590540
+    Number of Unique Values: 4
+  Column: card_meta_info_5
+    Max: nan
+    Min: nan
+    Mode: 226.0
+    Sampled Values: [226. 166. 226. 226. 226.]
+    Number of Total Values: 590540
+    Number of Unique Values: 119
+  Column: card_meta_info_6
+    Mode: debit
+    Sampled Values: ['debit' 'debit' 'credit' 'debit' 'credit']
+    Number of Total Values: 590540
+    Number of Unique Values: 4
+  Column: purchaser billing region
+    Max: nan
+    Min: nan
+    Mode: 299.0
+    Sampled Values: [325. 204. 143. 315. 315.]
+    Number of Total Values: 590540
+    Number of Unique Values: 332
+  Column: purchaser billing country
+    Max: nan
+    Min: nan
+    Mode: 87.0
+    Sampled Values: [87. 87. 87. 87. nan]
+    Number of Total Values: 590540
+    Number of Unique Values: 74
+  Column: purchaser email domain
+    Mode: gmail.com
+    Sampled Values: ['hotmail.com' nan 'yahoo.com' nan 'ymail.com']
+    Number of Total Values: 590540
+    Number of Unique Values: 59
+  Column: recipient email domain
+    Mode: gmail.com
+    Sampled Values: ['prodigy.net.mx' 'gmail.com' 'hotmail.com' nan nan]
+    Number of Total Values: 590540
+    Number of Unique Values: 60
+  Column: match_1
+    Mode: T
+    Sampled Values: ['T' 'T' 'T' 'T' nan]
+    Number of Total Values: 590540
+    Number of Unique Values: 2
+  Column: match_2
+    Mode: T
+    Sampled Values: [nan nan 'T' nan 'T']
+    Number of Total Values: 590540
+    Number of Unique Values: 2
+  Column: match_3
+    Mode: T
+    Sampled Values: [nan nan nan 'T' nan]
+    Number of Total Values: 590540
+    Number of Unique Values: 2
+  Column: match_4
+    Mode: M0
+    Sampled Values: ['M0' nan 'M1' nan 'M1']
+    Number of Total Values: 590540
+    Number of Unique Values: 3
+  Column: match_5
+    Mode: F
+    Sampled Values: [nan nan nan 'F' 'F']
+    Number of Total Values: 590540
+    Number of Unique Values: 2
+  Column: match_6
+    Mode: F
+    Sampled Values: ['T' 'T' 'F' 'F' 'F']
+    Number of Total Values: 590540
+    Number of Unique Values: 2
+  Column: match_7
+    Mode: F
+    Sampled Values: ['F' 'F' 'F' nan nan]
+    Number of Total Values: 590540
+    Number of Unique Values: 2
+  Column: match_8
+    Mode: F
+    Sampled Values: [nan nan 'F' nan nan]
+    Number of Total Values: 590540
+    Number of Unique Values: 2
+  Column: match_9
+    Mode: T
+    Sampled Values: ['T' nan nan 'T' nan]
+    Number of Total Values: 590540
+    Number of Unique Values: 2
+  Column: TransactionID
+    Max: 3577539
+    Min: 2987000
+    Mode: 2987000
+    Sampled Values: [3251662 3347862 3510526 3027948 3226201]
+    Number of Total Values: 590540
+    Number of Unique Values: 590540
+  Column: isFraud
+    Max: 1
+    Min: 0
+    Mode: 0
+    Sampled Values: [0 0 0 0 0]
+    Number of Total Values: 590540
+    Number of Unique Values: 2
+  Column: TransactionAmt
+    Max: 10.37156404479566
+    Min: 0.22394323148477407
+    Mode: 4.0943445622221
+    Sampled Values: [2.8323306  3.68887945 3.89079937 3.55534806 4.77068462]
+    Number of Total Values: 590540
+    Number of Unique Values: 20902
+  Column: distance
+Column is multi-dimensional. Probably an embedding type. Usually not of interest
+  Column: payment_card_related_counting
+Column is multi-dimensional. Probably an embedding type. Usually not of interest
+  Column: timedelta
+Column is multi-dimensional. Probably an embedding type. Usually not of interest
+  Column: vesta_features
+Column is multi-dimensional. Probably an embedding type. Usually not of interest
+
+Analysis for Table Identity:
+  Column: identity_12_info
+    Mode: NotFound
+    Sampled Values: ['NotFound' 'NotFound' 'NotFound' 'NotFound' 'Found']
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: identity_13_info
+    Max: nan
+    Min: nan
+    Mode: 52.0
+    Sampled Values: [49. 52. 27. 49. 52.]
+    Number of Total Values: 144233
+    Number of Unique Values: 54
+  Column: identity_14_info
+    Max: nan
+    Min: nan
+    Mode: -300.0
+    Sampled Values: [  nan   nan   nan -300.   nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 25
+  Column: identity_15_info
+    Mode: Found
+    Sampled Values: ['Found' 'Found' 'Found' 'New' 'Found']
+    Number of Total Values: 144233
+    Number of Unique Values: 3
+  Column: identity_16_info
+    Mode: Found
+    Sampled Values: ['Found' 'Found' 'NotFound' 'Found' 'NotFound']
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: identity_17_info
+    Max: nan
+    Min: nan
+    Mode: 166.0
+    Sampled Values: [225. 166. 225. 166. 166.]
+    Number of Total Values: 144233
+    Number of Unique Values: 104
+  Column: identity_18_info
+    Max: nan
+    Min: nan
+    Mode: 15.0
+    Sampled Values: [15. nan nan nan 15.]
+    Number of Total Values: 144233
+    Number of Unique Values: 18
+  Column: identity_19_info
+    Max: nan
+    Min: nan
+    Mode: 266.0
+    Sampled Values: [339.  nan 621. 266. 153.]
+    Number of Total Values: 144233
+    Number of Unique Values: 522
+  Column: identity_20_info
+    Max: nan
+    Min: nan
+    Mode: 507.0
+    Sampled Values: [431. 144. 325. 161. 507.]
+    Number of Total Values: 144233
+    Number of Unique Values: 394
+  Column: identity_21_info
+    Max: nan
+    Min: nan
+    Mode: 252.0
+    Sampled Values: [ nan 252.  nan  nan  nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 490
+  Column: identity_22_info
+    Max: nan
+    Min: nan
+    Mode: 14.0
+    Sampled Values: [nan nan nan nan nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 25
+  Column: identity_23_info
+    Mode: IP_PROXY:TRANSPARENT
+    Sampled Values: [nan nan nan 'IP_PROXY:ANONYMOUS' nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 3
+  Column: identity_24_info
+    Max: nan
+    Min: nan
+    Mode: 11.0
+    Sampled Values: [nan nan nan nan nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 12
+  Column: identity_25_info
+    Max: nan
+    Min: nan
+    Mode: 321.0
+    Sampled Values: [nan nan nan nan nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 341
+  Column: identity_26_info
+    Max: nan
+    Min: nan
+    Mode: 161.0
+    Sampled Values: [nan nan nan nan nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 95
+  Column: identity_27_info
+    Mode: Found
+    Sampled Values: [nan nan nan nan nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: identity_28_info
+    Mode: Found
+    Sampled Values: ['Found' 'New' 'Found' 'New' 'New']
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: identity_29_info
+    Mode: Found
+    Sampled Values: ['NotFound' 'Found' 'Found' 'Found' 'Found']
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: identity_30_info
+    Mode: Windows 10
+    Sampled Values: ['Mac OS X 10_11_6' nan 'Android 7.0' 'iOS 11.1.1' 'iOS 11.2.1']
+    Number of Total Values: 144233
+    Number of Unique Values: 75
+  Column: identity_31_info
+    Mode: chrome 63.0
+    Sampled Values: ['mobile safari 11.0' 'chrome 63.0 for android' 'chrome 64.0 for android'
+ 'chrome 63.0' 'chrome 63.0']
+    Number of Total Values: 144233
+    Number of Unique Values: 130
+  Column: identity_32_info
+    Max: nan
+    Min: nan
+    Mode: 24.0
+    Sampled Values: [nan nan 24. nan 24.]
+    Number of Total Values: 144233
+    Number of Unique Values: 4
+  Column: identity_33_info
+    Mode: 1920x1080
+    Sampled Values: ['1920x1080' '1920x1080' '1334x750' nan nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 260
+  Column: identity_34_info
+    Mode: match_status:2
+    Sampled Values: [nan nan nan 'match_status:2' nan]
+    Number of Total Values: 144233
+    Number of Unique Values: 4
+  Column: identity_35_info
+    Mode: T
+    Sampled Values: ['F' 'T' 'T' 'T' 'T']
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: identity_36_info
+    Mode: F
+    Sampled Values: ['F' 'F' 'F' 'F' 'F']
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: identity_37_info
+    Mode: T
+    Sampled Values: ['T' 'T' 'T' 'T' 'T']
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: identity_38_info
+    Mode: F
+    Sampled Values: [nan 'T' 'F' 'F' 'F']
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: DeviceType
+    Mode: desktop
+    Sampled Values: ['mobile' 'desktop' 'desktop' 'desktop' 'mobile']
+    Number of Total Values: 144233
+    Number of Unique Values: 2
+  Column: DeviceInfo
+    Mode: Windows
+    Sampled Values: ['Windows' 'Windows' 'iOS Device' 'iOS Device' 'MacOS']
+    Number of Total Values: 144233
+    Number of Unique Values: 1786
+  Column: TransactionID
+    Max: 3577534
+    Min: 2987004
+    Mode: 2987004
+    Sampled Values: [3049281 3264720 3276021 3486368 3391319]
+    Number of Total Values: 144233
+    Number of Unique Values: 144233
+  Column: id_related_features
+Column is multi-dimensional. Probably an embedding type. Usually not of interest
+

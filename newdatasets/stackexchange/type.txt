@@ -1,0 +1,68 @@
+{
+    "Badges": {
+        "Id": ("category", "This column is probably representing the unique ID of each badge."),
+        "UserId": ("category", "This column likely represents the ID of users who received a badge."),
+        "Name": ("category", "This column represents the name of the badge, as it has a limited number of unique values."),
+        "Date": ("datetime", "This column represents the date and time when the badge was awarded."),
+        "Class": ("category", "This column represents different classifications of badges, as it has a few unique values."),
+        "TagBased": ("category", "This column indicates whether the badge is tag-based, as it has only two possible values.")
+    },
+    "Users": {
+        "Id": ("category", "This column represents the unique ID of each user in the system."),
+        "CreationDate": ("datetime", "This column represents the date and time when the user was created."),
+        "Location": ("text", "This column represents the user's location, as it contains a variety of text values."),
+        "AboutMe": ("text", "This column contains descriptive text about the user, as it has many unique values.")
+    },
+    "PostHistory": {
+        "Id": ("category", "This column represents the unique ID for each post history entry."),
+        "PostHistoryTypeId": ("category", "This column represents different types of post history events."),
+        "PostId": ("category", "This column represents the post associated with this history entry."),
+        "CreationDate": ("datetime", "This column represents the timestamp when the history entry was created."),
+        "Text": ("text", "This column contains text data, likely related to edits or post history details."),
+        "Comment": ("text", "This column contains comments related to post history changes."),
+        "UserName": ("category", "This column represents the username of the person making the change.")
+    },
+    "Vote": {
+        "Id": ("category", "This column represents the unique ID for each vote."),
+        "PostId": ("category", "This column represents the post that was voted on."),
+        "VoteTypeId": ("category", "This column represents different types of votes."),
+        "CreationDate": ("datetime", "This column represents the timestamp when the vote was cast."),
+        "BountyAmount": ("float", "This column represents the amount of bounty assigned to a post."),
+        "UserName": ("category", "This column represents the username of the voter, though many values are missing.")
+    },
+    "Comments": {
+        "Id": ("category", "This column represents the unique ID of each comment."),
+        "PostId": ("category", "This column represents the post to which the comment belongs."),
+        "Text": ("text", "This column contains the text of the comment."),
+        "CreationDate": ("datetime", "This column represents the timestamp when the comment was created."),
+        "CommentedUserId": ("category", "This column represents the ID of the user who made the comment.")
+    },
+    "Posts": {
+        "Id": ("category", "This column represents the unique ID of each post."),
+        "PostTypeId": ("category", "This column represents different types of posts."),
+        "AcceptedAnswerId": ("category", "This column represents the ID of the accepted answer for a post."),
+        "CreationDate": ("datetime", "This column represents the timestamp when the post was created."),
+        "Body": ("text", "This column contains the full text content of the post."),
+        "OwnerUserId": ("category", "This column represents the ID of the user who owns the post."),
+        "Title": ("text", "This column represents the title of the post."),
+        "LastEditorUserId": ("category", "This column represents the ID of the last user who edited the post."),
+        "ParentId": ("category", "This column represents the parent post ID in case of replies.")
+    },
+    "PostLink": {
+        "Id": ("category", "This column represents the unique ID of each post link."),
+        "CreationDate": ("datetime", "This column represents the timestamp when the post link was created."),
+        "PostId": ("category", "This column represents the source post in the link."),
+        "RelatedPostId": ("category", "This column represents the related post in the link."),
+        "LinkTypeId": ("category", "This column represents the type of relationship between the posts.")
+    },
+    "Tag": {
+        "Id": ("category", "This column represents the unique ID of each tag."),
+        "TagName": ("category", "This column represents the name of the tag."),
+        "ExcerptPostId": ("category", "This column represents the post that contains the tag's excerpt."),
+        "WikiPostId": ("category", "This column represents the post that contains the tag's wiki.")
+    },
+    "PostTag": {
+        "PostId": ("category", "This column represents the post ID associated with a tag."),
+        "TagId": ("category", "This column represents the tag ID associated with a post.")
+    }
+}

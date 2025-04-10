@@ -1,0 +1,75 @@
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints
+
+# System files
+.DS_Store
+
+# PyTorch saved model files
+*.pt
+*.pth
+
+# Log files
+logs/
+
+# Virtual environments
+venv/
+*.venv
+.env
+
+# IDE configuration files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# compressed files
+*.zip
+*.tar.gz
+*.tar
+
+
+test
+test/*
+
+# let users install this later
+graphstorm/
+graphstorm/*
+
+# used to store temporary cache files
+tmp/
+tmp/*
+
+
+# ogb-generated intermediate files
+dataset/
+dataset/*
+
+test*
+
+multi-table-benchmark/
+multi-table-benchmark/*
+
+catboost_info/
+catboost_info/*
+
+datasets/
+datasets/*
+
+wandb/
+wandb/*
+
+
+*.log 
+*.csv
+*.db
+
+_checkpoints/
+_checkpoints/*
+
+workspace/
+workspace/*

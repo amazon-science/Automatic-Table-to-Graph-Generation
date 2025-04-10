@@ -1,0 +1,31 @@
+{
+    "History": {
+        "id": ("category", "This column is probably representing the ID from 1 to n of users in the system, as it has a lot of unique values."),
+        "history_chain": ("category", "This column likely represents a categorical value related to the history chain, as it has a limited number of unique values."),
+        "offer": ("category", "This column represents offers, as it contains a limited number of unique values."),
+        "market": ("category", "This column likely represents a market category, as it has a limited set of unique values."),
+        "repeater": ("category", "This column likely represents a binary indicator (yes/no) for repeaters."),
+        "offerdate": ("datetime", "This column represents dates of offers, as the values conform to a date format.")
+    },
+    "Offer": {
+        "offer": ("category", "This column represents different offers, as it has a limited number of unique values."),
+        "offer_category": ("category", "This column represents different offer categories, as it has a limited number of unique values."),
+        "quantity": ("category", "This column represents quantity but has very few unique values, making it categorical."),
+        "company": ("category", "This column represents companies associated with offers, as it has a limited number of unique values."),
+        "offervalue": ("float", "This column represents the value of an offer, as it contains continuous numerical values."),
+        "brand": ("category", "This column represents brands associated with offers, as it has a limited number of unique values.")
+    },
+    "Transaction": {
+        "id": ("category", "This column is probably representing the ID from 1 to n of users in the system, as it has a lot of unique values."),
+        "trans_chain": ("category", "This column likely represents a categorical value related to the transaction chain, as it has a limited number of unique values."),
+        "dept": ("category", "This column represents department categories, as it has a limited set of unique values."),
+        "trans_category": ("category", "This column represents transaction categories, as it has a limited set of unique values."),
+        "trans_company": ("category", "This column represents companies associated with transactions, as it has a large but limited number of unique values."),
+        "brand": ("category", "This column represents brands associated with transactions, as it has a significant but finite number of unique values."),
+        "date": ("datetime", "This column represents transaction dates, as the values conform to a date format."),
+        "productsize": ("float", "This column represents the size of a product in continuous numerical values."),
+        "productmeasure": ("category", "This column represents measurement units for products, as it has a limited set of unique values."),
+        "purchasequantity": ("float", "This column represents the quantity of purchased items and is numerical with a wide range of values."),
+        "purchaseamount": ("float", "This column represents the monetary amount of purchases, as it contains continuous numerical values.")
+    }
+}
