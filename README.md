@@ -47,7 +47,7 @@ Check commands in the `scripts/autog.sh`.
 
 Check commands in the `scripts/run.sh`.
 
-## How to apply AutoG to your own dataset?
+## How to apply AutoG to your own dataset
 
 1. Use `analyze_dataframes` from `models.llm.gconstruct` to generate the metadata information of your data
 
