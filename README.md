@@ -12,7 +12,7 @@ First, install the 4dbinfer-related libraries
 bash multi-table-benchmark/conda/create_conda_env.sh
 ```
 
-Download deepjoin
+Download `deepjoin`
 
 ```
 git clone https://github.com/mutong184/deepjoin
