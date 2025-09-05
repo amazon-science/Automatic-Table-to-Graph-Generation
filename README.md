@@ -24,6 +24,9 @@ cd Automatic-Table-to-Graph-Generation/
 ### Step 2: Install Core Dependencies
 
 ```bash
+# for the mysqlclient linux requirement
+sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config
+
 # Install 4dbinfer-related libraries
 bash multi-table-benchmark/conda/create_conda_env.sh
 
