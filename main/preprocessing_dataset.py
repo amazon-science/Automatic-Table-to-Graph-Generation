@@ -1186,6 +1186,10 @@ tasks:
         new_purchase = pd.read_parquet(f"{dataset_path}/diginetica/expert/data/purchases.pqt")
         new_purchase = new_purchase.rename(columns = {'userId': 'purchaser', 'sessionId': 'purchase_session'})
         new_purchase.to_parquet(f"{dataset_path}/diginetica/old/data/purchases.pqt")
+
+        old_product_name_token = pd.read_parquet(f"{dataset_path}/diginetica/expert/data/product_name_token.pqt")
+        old_product_name_token.to_parquet(f"{dataset_path}/diginetica/old/data/old_product_name_token.pqt")
+
         new_product = pd.read_parquet(f"{dataset_path}/diginetica/expert/data/products.pqt")
         new_product = duckdb.query("""
             SELECT np.itemId,
