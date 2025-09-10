@@ -277,7 +277,7 @@ def connect_two_columns(dbb, table_1_name, table_1_col_name, table_2_name, table
     # import ipdb; ipdb.set_trace()
     if type_of_col1 == 'foreign_key' and type_of_col2 == 'foreign_key' and columninfo_dict[f'{table_1_name}.{table_1_col_name}'].link_to == columninfo_dict[f'{table_2_name}.{table_2_col_name}'].link_to:
         return dbb
-    if type_of_col1 != type_of_col2:
+    if type_of_col1 != type_of_col2 and type_of_col2 not in ['primary_key', 'foreign_key']:
         return dbb 
     
     ## two non key types with the same type 
