@@ -43,9 +43,11 @@ def map_keys(original_dict, key_mapping):
         new_dict[new_key] = value
     return new_dict
 
-def main(dataset: str = typer.Argument("MAG", help="name of the dataset to be processed")):
+
+def main(dataset: str = typer.Argument("MAG", help="name of the dataset to be processed"), 
+         dataset_path: str = typer.Argument("/home/ubuntu/data/relbench", help="path to the dataset")):
     # dataset_path = "datasets"
-    dataset_path = "newdatasets"
+    # dataset_path = "newdatasets"
     if dataset == "MAG":
         print("Processing MAG dataset")
         

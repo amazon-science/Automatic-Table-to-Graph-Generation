@@ -6,7 +6,7 @@ from rich import traceback
 from models.autog.agent import AutoG_Agent
 from prompts.task import get_task_description
 from utils.misc import seed_everything
-from models.autog.agent import load_dbb_dataset_from_cfg_path_no_name
+from utils.data.rdb import load_dbb_dataset_from_cfg_path_no_name
 
 
 def retrieve_input_schema(full_schema):
@@ -132,13 +132,49 @@ def capitalize_first_alpha_concise(text):
     return text
 
 
+def get_llm_config(llm_name):
+    """Get LLM configuration based on model name."""
+    configs = {
+        "sonnet3": {
+            "model_name": "anthropic.claude-3-sonnet-20240229-v1:0",
+            "context_size": 200000,
+            "output_size": 4096
+        },
+        "llama3": {
+            "model_name": "meta.llama3-70b-instruct-v1:0",
+            "context_size": -1,
+            "output_size": -1
+        },
+        "mistralarge": {
+            "model_name": "mistral.mistral-large-2402-v1:0",
+            "context_size": 32000,
+            "output_size": 4096
+        },
+        "sonnet35": {
+            "model_name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+            "context_size": 200000,
+            "output_size": 4096
+        },
+        "opus3": {
+            "model_name": "anthropic.claude-3-opus-20240229-v1:0",
+            "context_size": 200000,
+            "output_size": 4096
+        },
+        "haiku3": {
+            "model_name": "anthropic.claude-3-haiku-20240229-v1:0",
+            "context_size": 200000,
+            "output_size": 4096
+        }
+    }
+    return configs.get(llm_name, configs["sonnet3"])
+
 
 def main(
-    dataset: str = typer.Argument("rel-amazon", help="The dataset name of the RDB dataset"),
-    schema_path: str = typer.Argument("output/data", help="Path to the data storage directory."),
+    dataset: str = typer.Argument("mag", help="The dataset name of the RDB dataset"),
+    llm_name: str = typer.Argument("sonnet3", help="The name of the LLM model to use."),
+    schema_path: str = typer.Argument("newdatasets", help="Path to the data storage directory."),
     method: str = typer.Argument("autog-s", help="The method to run the model."),
-    data_type_file: str = typer.Argument("stypes.json", help="The file to store the data type."),
-    task_name: str = typer.Argument("user-churn", help="Name of the task to fit the solution."),
+    task_name: str = typer.Argument("venue", help="Name of the task to fit the solution."),
     seed: int = typer.Option(0, help="The seed to use for the model."),
     lm_path: str = typer.Option("deepjoin/output/deepjoin_webtable_training-all-mpnet-base-v2-2023-10-18_19-54-27")
 ):
@@ -147,33 +183,28 @@ def main(
     typer.echo("Agent version of the Auto-G")
 
     # Get LLM configuration
-    llm_config = {"dummy": None}
+    llm_config = get_llm_config(llm_name)
     
     # Setup paths
     path_of_the_dataset = f"{schema_path}/{dataset}"
-    # autog_path = os.path.join(path_of_the_dataset, "autog")
-    # os.makedirs(autog_path, exist_ok=True)
+    autog_path = os.path.join(path_of_the_dataset, "autog")
+    os.makedirs(autog_path, exist_ok=True)
 
     # Load metadata
     metainfo_path = os.path.join(path_of_the_dataset, 'type.txt')
     metainfo = read_txt_dict(metainfo_path)
     metainfo = {
-        key: value 
+        capitalize_first_alpha_concise(key): value 
         for key, value in metainfo.items()
     }
 
     # Load dataset information
-    information_path = os.path.join(path_of_the_dataset, f'information.txt')
+    information_path = os.path.join(path_of_the_dataset, 'information.txt')
     with open(information_path, 'r') as file:
         information = file.read()
 
     # Load and prepare data
-    ## this can be under the old subdirectory or directly under the dataset directory
-    if os.path.exists(os.path.join(path_of_the_dataset, 'metadata.yaml')):
-        old_data_config_path = os.path.join(path_of_the_dataset)
-    else:
-        old_data_config_path = os.path.join(path_of_the_dataset, 'old')
-        path_of_the_dataset = old_data_config_path
+    old_data_config_path = os.path.join(path_of_the_dataset, 'old')
     multi_tabular_data = load_dbb_dataset_from_cfg_path_no_name(old_data_config_path)
     task_description = get_task_description(dataset, task_name)
     schema_input = generate_training_metainfo(
@@ -187,15 +218,18 @@ def main(
         initial_schema=schema_input,
         mode=method,
         oracle=None,
-        path_to_file=path_of_the_dataset,
+        llm_model_name=llm_config["model_name"],
+        context_size=llm_config["context_size"],
+        path_to_file=autog_path,
+        llm_sleep=1,
         use_cache=False,
         threshold=10,
+        output_size=llm_config["output_size"],
         task_description=task_description,
         dataset=dataset,
         task_name=task_name,
         schema_info=information,
-        lm_path=lm_path,
-        data_type_file=data_type_file
+        lm_path=lm_path
     )
     
     agent.augment()

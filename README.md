@@ -23,12 +23,31 @@ cd Automatic-Table-to-Graph-Generation/
 
 ### Step 2: Install Core Dependencies
 
+Recommend using docker to prepare the environment.
+``` bash 
+docker build -t autog .
+```
+
+Then create a mapping for consistent installation 
+``` bash
+docker run --gpus all -it -v ../Automatic-Table-to-Graph-Generation:/workspace -v ./opt:/opt autog /bin/bash
+```
+
+Then 
+``` bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && bash /tmp/miniconda.sh -b -p /opt/conda && rm /tmp/miniconda.sh
+conda init && source ~/.bashrc && cd /workspace/multi-table-benchmark && bash conda/create_conda_env.sh -s -g 11.7 -p 3.9 -t 1.13.1 
+source ~/.bashrc
+pip install codetiming humanfriendly sentence_transformers==3.3.0 transformers==4.44.2 nltk==3.9.1
+```
+
 ```bash
 # for the mysqlclient linux requirement
 sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config
 
 # Install 4dbinfer-related libraries
-bash multi-table-benchmark/conda/create_conda_env.sh
+cd multi-table-benchmark
+bash conda/create_conda_env.sh
 
 # Clone DeepJoin to download the language model
 git clone https://github.com/mutong184/deepjoin
@@ -76,6 +95,8 @@ Execute GML tasks on the constructed graphs:
 ```bash
 bash scripts/run.sh
 ```
+
+### Update: now we stick to a non-api version of the llm, you can directly run the script and then paste the output from your browser-end LLMs for quick testing.
 
 ## Using AutoG with Custom Datasets
 

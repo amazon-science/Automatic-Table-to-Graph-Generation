@@ -71,3 +71,13 @@ _checkpoints/*
 
 workspace/
 workspace/*
+
+*.deb
+
+/datasets/
+
+/deepjoin/
+
+/opt/
+
+multi-table-benchmark/*.sh

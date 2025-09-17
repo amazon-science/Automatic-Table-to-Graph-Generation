@@ -1,18 +1,18 @@
 ## mag venue
-python3 -m main.autog mag sonnet35 newdatasets autog-s venue
+python3 -m main.autog mag datasets autog-s type.txt venue
 
 ## after run this, you probably need to delete the round 0 directory otherwise there will be issues
 
 ## movielens
-python3 -m main.autog movielens sonnet35 newdatasets autog-s ratings
+# python3 -m main.autog movielens datasets autog-s type.txt ratings
 
 ## ieee-cis
-python3 -m main.autog ieee-cis sonnet35 newdatasets autog-s fraud
+# python3 -m main.autog ieee-cis datasets autog-s type.txt fraud
 
 
 
 ## avs 
-python3 -m main.autog avs sonnet3 newdatasets autog-s repeater
+# python3 -m main.autog avs datasets autog-s type.txt repeater
 
 ## diginetica
-python3 -m main.autog diginetica sonnet3 newdatasets autog-s purchase
+# python3 -m main.autog diginetica datasets autog-s type.txt purchase

@@ -1,11 +1,13 @@
+from models.llm.bedrock import get_bedrock_llm, bedrock_llm_query
 import os
 from models.autog.action import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
 from prompts.mautog import get_multi_round_action_selection_prompt, get_single_round_multi_step_prompt
-
-from models.llm.gconstruct import extract_between_tags, analyze_dataframes, dummy_llm_interaction
+from utils.data.rdb import load_dbb_dataset_from_cfg_path_no_name
+from models.llm.gconstruct import extract_between_tags, analyze_dataframes
 import typer
 import time
 from copy import deepcopy
+from utils.misc import copy_directory
 import shutil
 import ast
 import yaml
@@ -16,8 +18,6 @@ import json
 from copy import deepcopy
 from utils.plot import plot_rdb_dataset_schema
 from dbinfer_bench.dataset_meta import DBBColumnSchema
-from dbinfer_bench.rdb_dataset import DBBRDBDataset
-from utils.misc import copy_directory
 
 def format_top_k_similarities(dbb, similarity_dict: Dict[Tuple[str, str, str, str], float], k: int) -> str:
     """Formats the top k most similar pairs into a string.
@@ -77,16 +77,13 @@ def ordinal(n: int) -> str:
     suffix = suffixes.get(n % 10, "th") if n % 10 in suffixes or n % 100 // 10 == 1 else "th"
     return str(n) + suffix
 
-def load_dbb_dataset_from_cfg_path_no_name(cfg_path: str):
-    return DBBRDBDataset(cfg_path)
-
 
 class AutoG_Agent():
     def __init__(self, initial_schema, mode="autog-s", oracle = None,  
-                 path_to_file = "",
-                use_cache = False, 
-                 threshold = 10, llm_sleep = 0.5, task_description = 'autog', dataset = 'mag', 
-                 task_name = 'venue', schema_info = "", lm_path = "", jtd_k = 20, recalculate = True, data_type_file = "", update_task = False) -> None:
+                 llm_model_name = "anthropic.claude-3-sonnet-20240229-v1:0", context_size = 4096, 
+                 icl_k = 6, path_to_file = "",
+                 llm_sleep=1, use_cache = False, 
+                 threshold = 10, output_size = 4096, task_description = 'autog', dataset = 'mag', task_name = 'venue', schema_info = "", lm_path = "", jtd_k = 20, recalculate = True) -> None:
         """
             Main agent program for AutoG
             Args:
@@ -95,10 +92,12 @@ class AutoG_Agent():
                 oracle: the oracle model to evaluate the schema
                 llm_model_name: str: the name of the llm model
                 context_size: int: the context size of the llm model
+                icl_k: int: the number of ICL samples
                 path_to_file: str: the path to the file
                 llm_sleep: int: the sleep time of the llm api call 
                 use_cache: bool: whether to use cache for llm calling
                 threshold: int: the maximum number of running rounds for autog
+                output_size: int: the output context size of llm
                 task_description: str: the task description of the current task
                 dataset: str: the dataset name
                 task_name: str: the task name
@@ -106,14 +105,13 @@ class AutoG_Agent():
                 lm_path: str: the path to the pre-trained deep join model
                 jtd_k: int: the number of top k similar columns
                 recalculate: bool: whether to recalculate the deep join and statistics for each round
-                data_type_file: str: the file to store the data type
-                update_task: bool: whether to update the task after each round, for relbench, no need
         """
-        self.llm = ""
+        self.llm = get_bedrock_llm(llm_model_name, context_size=context_size)
         self.action_list = get_autog_actions()
         self.threshold = threshold
         self.state = initial_schema
         self.original_state = deepcopy(initial_schema)
+        self.icl_k = icl_k
         self.mode = mode
         self.oracle = oracle
         self.icl_strategy = "random"
@@ -127,6 +125,7 @@ class AutoG_Agent():
         ## storing an object: 
         ## index 
         ## path to saved objects
+        self.output_size = output_size
         self.task_name = task_name
         self.task_description = task_description
         self.schema_info = schema_info
@@ -139,8 +138,6 @@ class AutoG_Agent():
         self.icl_demonstrations = []
         self.history = []
         self.llm_sleep = llm_sleep
-        self.data_type_file = data_type_file
-        self.need_update_task = update_task
         #if self.mode == 'autog-s':
         examples = get_single_round_multi_step_prompt()
         for example in examples:
@@ -159,21 +156,18 @@ class AutoG_Agent():
         if self.jtd_k == 0:
             return ""
         # import ipdb; ipdb.set_trace()
-        os.makedirs(os.path.join(self.path_to_file, 'round_0'), exist_ok=True)
         if os.path.exists(os.path.join(self.path_to_file, 'round_0', 'deepjoin.pkl')) and not self.recalculate:
             typer.echo("Load the deepjoin from cache")
             result=joblib.load(os.path.join(self.path_to_file, 'round_0', 'deepjoin.pkl'))
         elif self.recalculate:
             typer.echo("First try to see the deepjoin state")
-            if self.round == 0 and os.path.exists(os.path.join(self.path_to_file, f'round_{self.round}', f'deepjoin.pkl')):
-                result = joblib.load(os.path.join(self.path_to_file, f'round_{self.round}', f'deepjoin.pkl'))
+            if os.path.exists(os.path.join(self.path_to_file, 'round_0', f'deepjoin{self.round}.pkl')):
+                result = joblib.load(os.path.join(self.path_to_file, 'round_0', f'deepjoin{self.round}.pkl'))
             else:
                 typer.echo("Calculate the deepjoin")
                 model = load_pretrain_jtd_lm(self.lm_path)
                 result = join_discovery(rdb_dataset, model)
-                if self.round == 0:
-                    ## only cache the first round since the result for latter round may be different
-                    joblib.dump(result, os.path.join(self.path_to_file, f'round_{self.round}', f'deepjoin.pkl'))
+                joblib.dump(result, os.path.join(self.path_to_file, 'round_0', f'deepjoin{self.round}.pkl'))
         else:
             typer.echo("Calculate the deepjoin")
             model = load_pretrain_jtd_lm(self.lm_path)
@@ -229,6 +223,8 @@ class AutoG_Agent():
             action_description, example_str, history_str, schema, stats, self.task_description, deepjoin_prior
         )
         ## save the current prompt for debug 
+        with open(os.path.join(self.dataset_cache_path, 'prompt.txt'), 'w') as f:
+            f.write(full_prompts)
         return full_prompts
     
     def parse_args(self, parameters):
@@ -294,12 +290,8 @@ class AutoG_Agent():
         selection = "nothing selected yet"
         # import ipdb; ipdb.set_trace()
         this_round_dbb = dbb
-        os.makedirs(os.path.join(self.path_to_file, f'{self.task_name}_round_{epoch}'), exist_ok=True)
         this_round_prompt = self.pack_prompts(this_round_dbb)
-        # response = bedrock_llm_query(self.llm, this_round_prompt, max_tokens = self.output_size, cache=self.use_cache, debug_dataset=self.dataset, debug_task=self.task_name, debug_round=epoch-1)
-        query_file_path = os.path.join(self.path_to_file, f'{self.task_name}_round_{epoch}', 'query.txt') 
-        response_file_path = os.path.join(self.path_to_file, f'{self.task_name}_round_{epoch}', 'response.txt')
-        response = dummy_llm_interaction(this_round_prompt, query_file_path, response_file_path)
+        response = bedrock_llm_query(self.llm, this_round_prompt, max_tokens = self.output_size, cache=self.use_cache, debug_dataset=self.dataset, debug_task=self.task_name, debug_round=epoch-1)
         selection = extract_between_tags(response, "selection")[0].strip()
         if selection == "None":
             return this_round_dbb, False
@@ -327,12 +319,11 @@ class AutoG_Agent():
                 this_round_dbb.method = method
                 self.success += 1
                 if self.mode == 'autog-a':
-                    if self.need_update_task:
-                        this_round_dbb = self.update_task(this_round_dbb)
+                    this_round_dbb = self.update_task(this_round_dbb)
                     self.backup(this_round_dbb)
                     ## if autog-a, update after every action, otherwise update once
-                if self.need_update_task:
-                    this_round_dbb = self.update_task(this_round_dbb)
+                    
+                this_round_dbb = self.update_task(this_round_dbb)
             except Exception as e:
                 ## recover from error
                 typer.echo(f"Error: {e}")
@@ -341,8 +332,7 @@ class AutoG_Agent():
                 self.error += 1
                 if self.error >= 3:
                     return this_round_dbb, False 
-        ## autog for relbench, quit after one round
-        return this_round_dbb, False
+        return this_round_dbb, True
 
     
     def get_current_state(self):
@@ -461,13 +451,31 @@ class AutoG_Agent():
         """
             Augment the schema
         """
-        typer.echo("Start to augment the schema")
-        dbb_root_path = self.path_to_file
-        dbb = load_dbb_dataset_from_cfg_path_no_name(dbb_root_path)
         for i in range(self.threshold):
             typer.echo(f"Round: {i}")
             ## generate the folder for round i
-            
+            self.dataset_cache_path = os.path.join(self.path_to_file, f"round_{i}")
+            os.makedirs(self.dataset_cache_path, exist_ok=True)
+            os.system(f"mkdir -p {self.dataset_cache_path}/data")
+            os.system(f"mkdir -p {self.dataset_cache_path}/{self.task_name}")
+            with open(os.path.join(self.dataset_cache_path, 'metadata.yaml'), 'w') as f:
+                yaml.dump(self.state, f)
+            if i == 0 and (not os.path.exists(os.path.join(self.dataset_cache_path, 'data')) or len(os.listdir(os.path.join(self.dataset_cache_path, 'data'))) == 0):
+                ## initial state, move the data from old to autog
+                parent_dir = os.path.join(self.path_to_file, '..', 'old')
+                initial_data_path = os.path.join(parent_dir, 'data')
+                initial_task_path = os.path.join(parent_dir, self.task_name)
+                target_data_path = os.path.join(self.dataset_cache_path, 'data')
+                target_task_path = os.path.join(self.dataset_cache_path, self.task_name)
+                copy_directory(initial_data_path, target_data_path)
+                copy_directory(initial_task_path, target_task_path)
+                self.round += 1
+                continue
+            elif i == 0:
+                self.round += 1
+                continue
+            if i == 1:
+                dbb = load_dbb_dataset_from_cfg_path_no_name(os.path.join(self.path_to_file, "round_0"))
             res, need_continue = self.decide_next_step(dbb, i)
             self.round += 1
             if need_continue == False:

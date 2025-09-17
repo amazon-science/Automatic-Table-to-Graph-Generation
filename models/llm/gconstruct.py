@@ -1,7 +1,7 @@
 # import textgrad as tg
 from prompts.autog import single_round_prompt
 from prompts.autog import EXAMPLE_INPUT_1, EXAMPLE_INPUT_2, code_generation_prompt
-from llama_index.core.llms import MessageRole, ChatMessage
+# from llama_index.core.llms import MessageRole, ChatMessage
 from dbinfer import DBBRDBDataset, DBBRDBDatasetMeta
 import json
 import re
@@ -10,6 +10,7 @@ import pandas as pd
 import duckdb
 import numpy as np
 from collections import defaultdict
+import os
 
 def remove_dummy_table(table_dict):
     new_dict = []
@@ -120,19 +121,19 @@ def get_dataset_column_stats(rdb_data: DBBRDBDataset, schema: DBBRDBDatasetMeta)
         return description
     
     
-def generate_augmentation_code(llm, first_round_input, first_round_output, dataset, table_info, input_schema, output_schema):
-    code_prompt = code_generation_prompt(dataset, table_info, input_schema, output_schema)
-    messages = [
-        ChatMessage(
-            role=MessageRole.USER,
-            content=(code_prompt)
-        )
-    ]
-    print(code_prompt)
-    res = llm.chat(messages, temperature=0, max_tokens=4096).message.content
-    code_res = extract_between_tags(res, "code")[0]
-    print(code_res)
-    return code_res, code_prompt
+# def generate_augmentation_code(llm, first_round_input, first_round_output, dataset, table_info, input_schema, output_schema):
+#     code_prompt = code_generation_prompt(dataset, table_info, input_schema, output_schema)
+#     messages = [
+#         ChatMessage(
+#             role=MessageRole.USER,
+#             content=(code_prompt)
+#         )
+#     ]
+#     print(code_prompt)
+#     res = llm.chat(messages, temperature=0, max_tokens=4096).message.content
+#     code_res = extract_between_tags(res, "code")[0]
+#     print(code_res)
+#     return code_res, code_prompt
 
 
 def analyze_dataframes(dataframes, k=5, dbb = None):
@@ -249,3 +250,60 @@ def analyze_dataframes(dataframes, k=5, dbb = None):
         output_string += "\n"  # Add separator between DataFrames
 
     return output_string 
+
+
+def dummy_llm_interaction(query_text: str, query_filepath: str = "query.txt", response_filepath: str = "response.txt") -> str:
+    """
+    Simulates an interaction with an LLM by saving the query to a file,
+    prompting the user to manually get the LLM response and save it to another file,
+    and then reading that response.
+
+    Args:
+        query_text: The query to send to the (simulated) LLM.
+        query_filepath: The path to the file where the query will be saved.
+        response_filepath: The path to the file where the user should save the LLM's response.
+
+    Returns:
+        The content of the response file, presumed to be the LLM's output.
+    """
+    try:
+        # 1. Store the query content to a file
+        with open(query_filepath, 'w', encoding='utf-8') as q_file:
+            q_file.write(query_text)
+        print(f"Query successfully written to: {os.path.abspath(query_filepath)}")
+
+        # 2. Halt the program and prompt the user
+        print("\n--- ACTION REQUIRED ---")
+        print(f"1. Open the file: {os.path.abspath(query_filepath)}")
+        print(f"2. Copy the query from '{query_filepath}'.")
+        print(f"3. Paste the query into your preferred LLM interface (e.g., in a web browser).")
+        print(f"4. Copy the LLM's complete response.")
+        print(f"5. Paste the response into a new file and save it as: {os.path.abspath(response_filepath)}")
+        print("---")
+
+        # Loop until the response file is found
+        while not os.path.exists(response_filepath):
+            input(f"Press Enter after you have saved the LLM's response to '{response_filepath}'...")
+            if not os.path.exists(response_filepath):
+                print(f"File not found: {os.path.abspath(response_filepath)}. Please ensure you have saved the file correctly.")
+            else:
+                print(f"Response file found: {os.path.abspath(response_filepath)}")
+                break # Exit loop once file is found
+
+        # 3. Read the content of the response file
+        llm_response = ""
+        with open(response_filepath, 'r', encoding='utf-8') as r_file:
+            llm_response = r_file.read()
+        print(f"\nLLM response successfully read from: {os.path.abspath(response_filepath)}")
+
+        return llm_response
+
+    except FileNotFoundError:
+        print(f"Error: Could not find one of the files. Please check paths.")
+        return "Error: File not found during operation."
+    except IOError as e:
+        print(f"An I/O error occurred: {e}")
+        return f"Error: I/O error: {e}"
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return f"Error: Unexpected error: {e}"

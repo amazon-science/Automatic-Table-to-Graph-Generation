@@ -139,7 +139,7 @@ def turn_dbb_into_a_lookup_table(dbb):
             lookup_table[(table.name, column.name)] = column
     return lookup_table
 
-def generate_or_connect_dummy_table(dbb, base_table_name, orig_col_name, new_table_name, new_col_name):
+def generate_or_connect_dummy_table(dbb, base_table_name, orig_col_name, new_table_name, new_col_name, **kwargs):
     """
         Description:
         This function can be used in two ways:
@@ -180,7 +180,72 @@ def number_of_pks(dbb):
                 number_of_pks += 1
     return number_of_pks
 
-def connect_two_columns(dbb, table_1_name, table_1_col_name, table_2_name, table_2_col_name):
+def connect_two_columns_with_non_key_type(dbb, table_1_name, table_1_col_name, table_2_name, table_2_col_name, col_type, **kwargs):
+    """
+        Description:
+        A helper function to connect two columns with non-key type
+        Parameters:
+        dbb: the database object
+        table_1_name: the name of the first table
+        table_1_col_name: the name of the column in the first table
+        table_2_name: the name of the second table
+        table_2_col_name: the name of the column in the second table
+    """
+    tables = dbb.metadata.tables
+    ## dtype of the two columns
+    
+    ## get the value of the first column
+    col_1_data = dbb.tables[table_1_name][table_1_col_name]
+    col_2_data = dbb.tables[table_2_name][table_2_col_name]
+    ## get the unique values of the first column
+    unique_col_1_data = np.unique(col_1_data)
+    ## get the unique values of the second column
+    unique_col_2_data = np.unique(col_2_data)
+    ## get the union of the two columns (the value of the new column)
+    union_col_data = np.union1d(unique_col_1_data, unique_col_2_data)
+    ## create a new table (name is the upper of col_name)
+    new_table_name = table_1_col_name[0].upper() + table_1_col_name[1:]
+    ## new_col_name 
+    new_col_name = table_1_col_name
+    new_table_pk_col_name = f'{new_table_name}ID'
+    ## change the dtype of two columns to be a foreign key to the primary key
+    ## of the new table
+    for table in tables:
+        if table.name == f'{table_1_name}' or table.name == f'{table_2_name}':
+            for column in table.columns:
+                if column.name == f'{table_1_col_name}' or column.name == f'{table_2_col_name}':
+                    column.dtype = 'foreign_key'
+                    column.link_to = f'{new_table_name}.{new_table_pk_col_name}'
+    ## create a new table
+    new_table = DBBTableSchema(
+        name=new_table_name,
+        columns=[
+            DBBColumnSchema(name=new_table_pk_col_name, dtype='primary_key'),
+            DBBColumnSchema(name=new_col_name, dtype=col_type)
+        ],
+        format = 'parquet', 
+        source = f'data/{new_table_name}.parquet'
+    ) 
+    dbb.metadata.tables.append(new_table)
+    ## add the data to the new table
+    new_table_data = {new_table_pk_col_name: np.arange(len(union_col_data)), new_col_name: union_col_data}
+    dbb.tables[new_table_name] = new_table_data
+    ## change the value of two old tables, need to change them into corresponding foreign key
+    ## foreign key of table 1
+    value_to_key_mapping = {v: k for k, v in enumerate(union_col_data)}
+    ## change the value of table 1
+    dbb.tables[table_1_name][table_1_col_name] = [value_to_key_mapping[v] for v in col_1_data]
+    ## change the value of table 2
+    dbb.tables[table_2_name][table_2_col_name] = [value_to_key_mapping[v] for v in col_2_data]
+    return dbb
+
+    
+    
+
+
+
+
+def connect_two_columns(dbb, table_1_name, table_1_col_name, table_2_name, table_2_col_name, **kwargs):
     """
         Description:
         Connect two columns, this function can be used for the following case. Always put the column with category type in table 1.
@@ -212,6 +277,13 @@ def connect_two_columns(dbb, table_1_name, table_1_col_name, table_2_name, table
     # import ipdb; ipdb.set_trace()
     if type_of_col1 == 'foreign_key' and type_of_col2 == 'foreign_key' and columninfo_dict[f'{table_1_name}.{table_1_col_name}'].link_to == columninfo_dict[f'{table_2_name}.{table_2_col_name}'].link_to:
         return dbb
+    if type_of_col1 != type_of_col2:
+        return dbb 
+    
+    ## two non key types with the same type 
+    if type_of_col1 not in ['category', 'primary_key', 'foreign_key'] and type_of_col2 not in ['category', 'primary_key', 'foreign_key']:
+        return connect_two_columns_with_non_key_type(dbb, table_1_name, table_1_col_name, table_2_name, table_2_col_name, col_type=type_of_col1)
+
     # add_fk = False
     ## ensure that table 2 is the target 
     if type_of_col1 == 'foreign_key' and type_of_col2 == 'category':
@@ -358,7 +430,7 @@ def connect_two_columns(dbb, table_1_name, table_1_col_name, table_2_name, table
     #     dbb.tables[table_1_name] = data
     return dbb
 
-def explode_multi_category_column(dbb, original_table, multi_cat_col, primary_key_column, new_table_name, new_col_name, dtype):
+def explode_multi_category_column(dbb, original_table, multi_cat_col, primary_key_column, new_table_name, new_col_name, dtype, **kwargs):
     """
         Description:
         Explode a multi-category column into multiple columns. You should determine whether to use this function. If you don't explode a multi-category column, it will be treated as a single category column automatically.
@@ -451,7 +523,7 @@ def explode_multi_category_column(dbb, original_table, multi_cat_col, primary_ke
     dbb.tables[original_table] = data
     return dbb
 
-def generate_non_dummy_table(dbb, base_table_name, cols, new_table_name):
+def generate_non_dummy_table(dbb, base_table_name, cols, new_table_name, **kwargs):
     """
         Description:
         Generate a non-dummy table with columns in the original table
