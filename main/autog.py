@@ -32,8 +32,12 @@ def generate_training_metainfo(data, meta_dict, this_task):
         'tables': []
     }
     
+    # print(f'Overall Meta: {overall_meta} \n')
+    
     # Convert data metadata list to dict for easier query
     data_meta_dict = {key.name: key for key in data.metadata.tables}
+
+    # print(f'Data meta dict: {data_meta_dict} \n')
     
     for table in data.tables:
         table_val = data.tables[table]
@@ -175,13 +179,21 @@ def main(
         old_data_config_path = os.path.join(path_of_the_dataset, 'old')
         path_of_the_dataset = old_data_config_path
     multi_tabular_data = load_dbb_dataset_from_cfg_path_no_name(old_data_config_path)
+    
+    print(f'multi_tabular_data: {multi_tabular_data.tables} \n')
+
     task_description = get_task_description(dataset, task_name)
+
+    print(f'task_description: {task_description} \n')
+
     schema_input = generate_training_metainfo(
         multi_tabular_data, 
         metainfo, 
         this_task=task_name
     )
 
+    print(f'schema_input: {schema_input} \n')
+    
     # Initialize and run agent
     agent = AutoG_Agent(
         initial_schema=schema_input,
@@ -197,7 +209,9 @@ def main(
         lm_path=lm_path,
         data_type_file=data_type_file
     )
-    
+
+    # print(f'Agent ICL: {agent.icl_demonstrations} \n ...')
+
     agent.augment()
     augment_history = "\n".join(agent.history)
     typer.echo(f"Augmentation history: \n{augment_history}")
