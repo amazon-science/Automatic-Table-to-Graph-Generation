@@ -1,0 +1,14 @@
+name: autog_web
+dependencies:
+  - python=3.9
+  - streamlit
+  - pandas
+  - python-dotenv
+  - boto3
+  - sqlalchemy
+  - pip:
+    - streamlit==1.38.0
+    - pandas==2.2.3
+    - python-dotenv==1.0.1
+    - boto3==1.35.27
+    - sqlalchemy==2.0.36
