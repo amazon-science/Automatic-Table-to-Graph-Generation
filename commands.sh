@@ -81,4 +81,3 @@ python -m main.autog mag ./data/datasets/mag autog-s type.txt venue
 
 # 2. Option 2: run autog2 (automatically interact with LLM for single or multiple rounds)
 python -m main.autog2 mag anthropic.claude-3-sonnet-20240229-v1:0 ./data/datasets autog-s venue
-
