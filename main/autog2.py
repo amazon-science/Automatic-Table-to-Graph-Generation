@@ -3,7 +3,7 @@ import ast
 import typer
 import numpy as np
 from rich import traceback
-from models.autog.agent import AutoG_Agent
+from models.autog.agent_old import AutoG_Agent
 from prompts.task import get_task_description
 from utils.misc import seed_everything
 from utils.data.rdb import load_dbb_dataset_from_cfg_path_no_name

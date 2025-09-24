@@ -12,15 +12,18 @@ git clone https://github.com/amazon-science/Automatic-Table-to-Graph-Generation.
 # -------------- create a conda environment for the AutoG
 cd Automatic-Table-to-Graph-Generation/
 
+# for the mysqlclient linux requirement
+sudo apt-get update
+sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config
+
 bash multi-table-benchmark/conda/create_conda_env.sh -c -p 3.9 -t 2.1
 # the env name will be autog-cpu
 conda activate autog-cpu
 
 # -------------- install other dependencies int autog-cpu environment
 pip install codetiming humanfriendly sentence_transformers==3.3.0 nltk==3.9.1 torchdata==0.7 torchtext==0.16.0
-pip install transformers==4.44.2 
-# for the mysqlclient linux requirement
-sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config
+pip install transformers==4.44.2
+pip install llama-index llama-index-llms-bedrock
 # for Graphviz
 sudo apt-get install graphviz
 # for nltk data
@@ -35,7 +38,6 @@ export PYTHONPATH=/data/Automatic-Table-to-Graph-Generation/multi-table-benchmar
 git clone https://github.com/mutong184/deepjoin
 
 # setup git-lfs
-sudo apt-get update
 sudo apt-get install git-lfs
 git lfs install
 
@@ -69,11 +71,14 @@ bash scripts/download.sh
 #   - input the overall prompt+new contents into an LLM (e.g., Claud Sonet 3.5+) API or Web console to get answer.
 #   - copy the answer (in RAW format!!!!!) and save to a file, named type.txt under the mag/ folder.
 
-# 2. run autog, and explanation of these arguments
+# 2. Option 1: run autog (manually call LLM), and explanation of these arguments
 #   mag             -> name of the --dataset argument
 #   /data/datasets  -> path of the folder that store data, .e.g, /data/datasets
 #   autog-s         -> the method to run the model
 #   type.txt        -> the name of file to save analysis results from LLM. Since we manually create this, this file is not used.
 #   venue           -> Name of the task to fit the solution
-python -m main.autog mag /data/datasets autog-s type.txt venue
+python -m main.autog mag ./data/datasets/mag autog-s type.txt venue
+
+# 2. Option 2: run autog2 (automatically interact with LLM for single or multiple rounds)
+python -m main.autog2 mag anthropic.claude-3-sonnet-20240229-v1:0 ./data/datasets autog-s venue
 
