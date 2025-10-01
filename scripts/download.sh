@@ -1,6 +1,6 @@
 ## IEEE-CIS RR Movielens Outbrain MAG AVS diginetica ESCI Stackexchange
 
-dataset_path="/data/datasets"
+dataset_path="./data/datasets"
 
 mkdir -p $dataset_path
 
