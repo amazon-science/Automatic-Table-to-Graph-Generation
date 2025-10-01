@@ -107,16 +107,6 @@ def synthesize_table(df, table_meta, fk_maps, n_rows=None, schema_table_names=No
                     for v in orig_vals
                 ]
 
-            # if ref_key not in fk_maps:
-            #     raise ValueError(f"Foreign key reference {ref_key} not found yet. "
-            #                      f"Ensure {ref_table} is synthesized first.")
-            # ref_map = fk_maps[ref_key]
-            # orig_vals = np.resize(df[col].values, n_rows)
-            # synthetic_df[col] = [
-            #     ref_map.get(v, np.random.choice(list(ref_map.values())))
-            #     for v in orig_vals
-            # ]
-
         else:
             synthetic_df[col] = synthesize_column(df[col], dtype, n_rows)
 
@@ -144,34 +134,6 @@ def synthesize_database(datapath, meta_file, size_config=None):
         for col_meta in table_meta["columns"]:
             if col_meta["dtype"] == "primary_key":
                 fk_maps[(table_name, col_meta["name"])] = id_map
-
-        # if rst[0] is not None:
-        #     synth_df, id_map = rst
-        #     synthetic_dfs[table_name] = (synth_df, table_meta["source"])
-        #
-        #     # Store PK mapping
-        #     for col_meta in table_meta["columns"]:
-        #         if col_meta["dtype"] == "primary_key":
-        #             fk_maps[(table_name, col_meta["name"])] = id_map
-        #
-        #     # del remaining[table_name]
-        # else:
-        #     # ignore missing tables
-        #     continue
-
-            # # create missing tables
-            # ref_table, ref_col = rst[1]
-            # # collect FK values from all referencing columns
-            # fk_values = []
-            # for t in schema["tables"]:
-            #     for c in t["columns"]:
-            #         if c["dtype"] == "foreign_key" and c["link_to"] == f"{ref_table}.{ref_col}":
-            #             tmp_df = load_raw_table(datapath, t["source"], t["format"])
-            #             fk_values.extend(tmp_df[c["name"]].dropna().tolist())
-            #
-            # synth_df, id_map = create_missing_table(ref_col, fk_values)
-            # synthetic_dfs[ref_table] = (synth_df, t["source"])
-            # fk_maps[(ref_table, ref_col)] = id_map
 
     # Handle tasks (with {split})
     for task_meta in schema.get("tasks", []):
