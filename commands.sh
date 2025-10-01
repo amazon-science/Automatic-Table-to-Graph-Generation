@@ -80,4 +80,9 @@ bash scripts/download.sh
 python -m main.autog mag ./data/datasets/mag autog-s type.txt venue
 
 # 2. Option 2: run autog2 (automatically interact with LLM for single or multiple rounds)
+# Note: need to set up environment variables for AWS bedrock access before running the Python command.
+export AWS_ACCESS_KEY_ID=<YOUR_AWS_ACCESS_KEY_ID>
+export AWS_SECRET_ACCESS_KEY=<YOUR_AWS_SECRET_ACCESS_KEY>
+export AWS_SESSION_TOKEN=<YOUR_AWS_SESSION_TOKEN>
+
 python -m main.autog2 mag anthropic.claude-3-sonnet-20240229-v1:0 ./data/datasets autog-s venue
