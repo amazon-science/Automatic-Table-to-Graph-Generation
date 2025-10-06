@@ -81,3 +81,7 @@ workspace/*
 /opt/
 
 multi-table-benchmark/*.sh
+
+CLAUDE.md
+
+tab2graph/
