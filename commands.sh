@@ -93,3 +93,5 @@ export AWS_SECRET_ACCESS_KEY=<YOUR_AWS_SECRET_ACCESS_KEY>
 export AWS_SESSION_TOKEN=<YOUR_AWS_SESSION_TOKEN>
 
 python -m main.autog2 mag anthropic.claude-3-sonnet-20240229-v1:0 ./data/datasets autog-s venue
+
+python -m main.autog2 avs anthropic.claude-3-sonnet-20240229-v1:0 ./data/datasets autog-s repeater
