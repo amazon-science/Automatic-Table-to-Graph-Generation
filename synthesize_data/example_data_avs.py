@@ -1,10 +1,10 @@
-import os.path
+import os
+import argparse
 import shutil
 import pandas as pd
 import numpy as np
 import uuid
 import yaml
-
 
 
 def load_raw_table(datapath, source, fmt):
@@ -24,6 +24,7 @@ def load_raw_table(datapath, source, fmt):
         return pd.read_parquet(os.path.join(datapath, source))
     else:
         raise ValueError(f"Unsupported format: {fmt}")
+
 
 def save_synthesized_table(df, outpath, dstfile):
     """ Save synthesized table. """
@@ -73,6 +74,7 @@ def create_missing_table(col_name, fk_values, n_rows=100):
     id_map = {orig: np.random.choice(synthetic_ids) for orig in set(fk_values)}
     return df, id_map
 
+
 def synthesize_table(df, table_meta, fk_maps, n_rows=None, schema_table_names=None):
     """ Synthesize one table given metadata + fk mappings. """
     if n_rows is None:
@@ -111,6 +113,7 @@ def synthesize_table(df, table_meta, fk_maps, n_rows=None, schema_table_names=No
             synthetic_df[col] = synthesize_column(df[col], dtype, n_rows)
 
     return synthetic_df, id_map
+
 
 def synthesize_database(datapath, meta_file, size_config=None):
     """ Generate synthetic database from metadata.yaml. """
@@ -152,7 +155,7 @@ def synthesize_database(datapath, meta_file, size_config=None):
     return synthetic_dfs
 
 
-def main_avs():
+def main_avs(args):
     size_config = {
         "History": 1000,  # synthetic history records
         "Offer": 50,  # synthetic offers
@@ -162,20 +165,25 @@ def main_avs():
         "repeater_test": 200  # synthetic test samples
     }
 
-    datapath = "./data/datasets/avs/old"
-    synthetic_dfs = synthesize_database(datapath, "metadata.yaml", size_config=size_config)
+    input_path = os.path.join(args.data_path, "old")
+    synthetic_dfs = synthesize_database(input_path, "metadata.yaml", size_config=size_config)
 
-    outpath = "./data/datasets/avs/synthetic"
+    output_path = os.path.join(args.data_path, "synthetic")
 
     for name, (df, dstfile) in synthetic_dfs.items():
         print(f"\nSynthetic Table: {name} (rows={len(df)})")
         print(df.head(3))
-        save_synthesized_table(df, outpath, dstfile)
+        save_synthesized_table(df, output_path, dstfile)
 
     # copy metadata.yaml file
-    shutil.copyfile(os.path.join(datapath, "metadata.yaml"), os.path.join(outpath, "metadata.yaml"))
+    shutil.copyfile(os.path.join(input_path, "metadata.yaml"),
+                    os.path.join(output_path, "metadata.yaml"))
 
 
 if __name__ == '__main__':
-
-    main_avs()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-path", type=str, default='/data/datasets/avs/',
+                        help=("The path to the root of avs dataset, and where the "
+                              "synthetic avs data to be saved."))
+    args = parser.parse_args()
+    main_avs(args)

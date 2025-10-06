@@ -1,41 +1,41 @@
 ## IEEE-CIS RR Movielens Outbrain MAG AVS diginetica ESCI Stackexchange
 
-dataset_path="./data/datasets"
+dataset_path="/data/datasets"
 
 mkdir -p $dataset_path
 
-## download movielens
+# download movielens
 
-# mkdir -p "$dataset_path/movielens/raw"
-# curl -C - -o "$dataset_path/movielens/raw/ml-latest-small.zip" https://files.grouplens.org/datasets/movielens/ml-latest-small.zip
-# unzip -o "$dataset_path/movielens/raw/ml-latest-small.zip" -d "$dataset_path/movielens/raw"
-# mkdir -p "$dataset_path/movielens/old"
-# mkdir -p "$dataset_path/movielens/expert"
-# mkdir -p "$dataset_path/movielens/old/data"
-# mkdir -p "$dataset_path/movielens/expert/data"
-# mkdir -p "$dataset_path/movielens/old/ratings"
-# mkdir -p "$dataset_path/movielens/expert/ratings"
+mkdir -p "$dataset_path/movielens/raw"
+curl -C - -o "$dataset_path/movielens/raw/ml-latest-small.zip" https://files.grouplens.org/datasets/movielens/ml-latest-small.zip
+unzip -o "$dataset_path/movielens/raw/ml-latest-small.zip" -d "$dataset_path/movielens/raw"
+mkdir -p "$dataset_path/movielens/old"
+mkdir -p "$dataset_path/movielens/expert"
+mkdir -p "$dataset_path/movielens/old/data"
+mkdir -p "$dataset_path/movielens/expert/data"
+mkdir -p "$dataset_path/movielens/old/ratings"
+mkdir -p "$dataset_path/movielens/expert/ratings"
 
-# python3 -m main.preprocessing_dataset mvls $dataset_path
+python3 -m main.preprocessing_dataset mvls $dataset_path
 
 # generate folder for autog  
 
 
 # download ieeecis
 
-# mkdir -p "$dataset_path/ieeecis/raw"
+mkdir -p "$dataset_path/ieeecis/raw"
 
-# kaggle competitions download -c ieee-fraud-detection --path "$dataset_path/ieeecis/raw"
-# unzip -o "$dataset_path/ieeecis/raw/ieee-fraud-detection.zip" -d "$dataset_path/ieeecis/raw"
+kaggle competitions download -c ieee-fraud-detection --path "$dataset_path/ieeecis/raw"
+unzip -o "$dataset_path/ieeecis/raw/ieee-fraud-detection.zip" -d "$dataset_path/ieeecis/raw"
 
-# mkdir -p "$dataset_path/ieeecis/old"
-# mkdir -p "$dataset_path/ieeecis/expert"
-# mkdir -p "$dataset_path/ieeecis/old/data"
-# mkdir -p "$dataset_path/ieeecis/expert/data"
-# mkdir -p "$dataset_path/ieeecis/old/fraud"
-# mkdir -p "$dataset_path/ieeecis/expert/fraud"
+mkdir -p "$dataset_path/ieeecis/old"
+mkdir -p "$dataset_path/ieeecis/expert"
+mkdir -p "$dataset_path/ieeecis/old/data"
+mkdir -p "$dataset_path/ieeecis/expert/data"
+mkdir -p "$dataset_path/ieeecis/old/fraud"
+mkdir -p "$dataset_path/ieeecis/expert/fraud"
 
-# python3 -m main.preprocessing_dataset IEEE-CIS $dataset_path
+python3 -m main.preprocessing_dataset IEEE-CIS $dataset_path
 
 # download MAG
 
@@ -58,54 +58,55 @@ DBB_DATASET_HOME="$dataset_path/mag/raw" python3 -m dbinfer.main download mag
 python3 -m main.preprocessing_dataset MAG $dataset_path
 
 # download outbrain
-# mkdir -p "$dataset_path/outbrain/raw"
-# mkdir -p "$dataset_path/outbrain/old"
-# mkdir -p "$dataset_path/outbrain/expert"
-# mkdir -p "$dataset_path/outbrain/old/data"
-# mkdir -p "$dataset_path/outbrain/expert/data"
-# mkdir -p "$dataset_path/outbrain/old/ctr"
-# mkdir -p "$dataset_path/outbrain/expert/ctr"
+mkdir -p "$dataset_path/outbrain/raw"
+mkdir -p "$dataset_path/outbrain/old"
+mkdir -p "$dataset_path/outbrain/expert"
+mkdir -p "$dataset_path/outbrain/old/data"
+mkdir -p "$dataset_path/outbrain/expert/data"
+mkdir -p "$dataset_path/outbrain/old/ctr"
+mkdir -p "$dataset_path/outbrain/expert/ctr"
 
-# DBB_DATASET_HOME="$dataset_path/outbrain/raw" python3 -m dbinfer.main download outbrain-small
+DBB_DATASET_HOME="$dataset_path/outbrain/raw" python3 -m dbinfer.main download outbrain-small
 
-# python3 -m main.preprocessing_dataset outbrain
+python3 -m main.preprocessing_dataset outbrain $dataset_path
 
 
 # download avs
 
-# mkdir -p "$dataset_path/avs/raw"
-# mkdir -p "$dataset_path/avs/old"
-# mkdir -p "$dataset_path/avs/expert"
-# mkdir -p "$dataset_path/avs/old/data"
-# mkdir -p "$dataset_path/avs/expert/data"
-# mkdir -p "$dataset_path/avs/old/repeater"
-# mkdir -p "$dataset_path/avs/expert/repeater"
+mkdir -p "$dataset_path/avs/raw"
+mkdir -p "$dataset_path/avs/old"
+mkdir -p "$dataset_path/avs/expert"
+mkdir -p "$dataset_path/avs/old/data"
+mkdir -p "$dataset_path/avs/expert/data"
+mkdir -p "$dataset_path/avs/old/repeater"
+mkdir -p "$dataset_path/avs/expert/repeater"
 
-# DBB_DATASET_HOME="$dataset_path/avs/raw" python3 -m dbinfer.main download avs
+DBB_DATASET_HOME="$dataset_path/avs/raw" python3 -m dbinfer.main download avs
 
-# python3 -m main.preprocessing_dataset avs
+python3 -m main.preprocessing_dataset AVS $dataset_path
 
 # download retailrocket
 
-# mkdir -p "$dataset_path/retailrocket/raw"
-# mkdir -p "$dataset_path/retailrocket/old"
-# mkdir -p "$dataset_path/retailrocket/expert"
-# mkdir -p "$dataset_path/retailrocket/old/data"
-# mkdir -p "$dataset_path/retailrocket/expert/data"
-# mkdir -p "$dataset_path/retailrocket/old/cvr"
-# mkdir -p "$dataset_path/retailrocket/expert/cvr"
+mkdir -p "$dataset_path/retailrocket/raw"
+mkdir -p "$dataset_path/retailrocket/old"
+mkdir -p "$dataset_path/retailrocket/expert"
+mkdir -p "$dataset_path/retailrocket/old/data"
+mkdir -p "$dataset_path/retailrocket/expert/data"
+mkdir -p "$dataset_path/retailrocket/old/cvr"
+mkdir -p "$dataset_path/retailrocket/expert/cvr"
 
-# mkdir -p "$dataset_path/retailrocket/realold/"
-# mkdir -p "$dataset_path/retailrocket/realold/data"
-# mkdir -p "$dataset_path/retailrocket/realold/cvr"
+mkdir -p "$dataset_path/retailrocket/realold/"
+mkdir -p "$dataset_path/retailrocket/realold/data"
+mkdir -p "$dataset_path/retailrocket/realold/cvr"
 
-# DBB_DATASET_HOME="$dataset_path/retailrocket/raw" python3 -m dbinfer.main download retailrocket
+DBB_DATASET_HOME="$dataset_path/retailrocket/raw" python3 -m dbinfer.main download retailrocket
 
-# python3 -m main.preprocessing_dataset RR
+python3 -m main.preprocessing_dataset RR $dataset_path
 
 # download diginetica
 
-## we find this dataset is problematic
+# we find this dataset is problematic
+
 # mkdir -p "$dataset_path/diginetica/raw"
 # mkdir -p "$dataset_path/diginetica/old"
 # mkdir -p "$dataset_path/diginetica/expert"
@@ -122,18 +123,16 @@ python3 -m main.preprocessing_dataset MAG $dataset_path
 
 # download stackexchange
 
-# mkdir -p "$dataset_path/stackexchange/raw"
-# mkdir -p "$dataset_path/stackexchange/old"
-# mkdir -p "$dataset_path/stackexchange/expert"
-# mkdir -p "$dataset_path/stackexchange/old/data"
-# mkdir -p "$dataset_path/stackexchange/expert/data"
-# mkdir -p "$dataset_path/stackexchange/old/churn"
-# mkdir -p "$dataset_path/stackexchange/expert/churn"
-# mkdir -p "$dataset_path/stackexchange/old/upvote"
-# mkdir -p "$dataset_path/stackexchange/expert/upvote"
+mkdir -p "$dataset_path/stackexchange/raw"
+mkdir -p "$dataset_path/stackexchange/old"
+mkdir -p "$dataset_path/stackexchange/expert"
+mkdir -p "$dataset_path/stackexchange/old/data"
+mkdir -p "$dataset_path/stackexchange/expert/data"
+mkdir -p "$dataset_path/stackexchange/old/churn"
+mkdir -p "$dataset_path/stackexchange/expert/churn"
+mkdir -p "$dataset_path/stackexchange/old/upvote"
+mkdir -p "$dataset_path/stackexchange/expert/upvote"
 
-# DBB_DATASET_HOME="$dataset_path/stackexchange/raw" python3 -m dbinfer.main download stackexchange
+DBB_DATASET_HOME="$dataset_path/stackexchange/raw" python3 -m dbinfer.main download stackexchange
 
-# python3 -m main.preprocessing_dataset stackexchange
-
-# git clone https://github.com/mutong184/deepjoin.git
+python3 -m main.preprocessing_dataset stackexchange $dataset_path
