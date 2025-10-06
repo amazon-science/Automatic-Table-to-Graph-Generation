@@ -32,10 +32,10 @@ task_description = {
         "upvote": "The task is to predict the Target column of table Posts, which means predicting whether the post will be upvoted or not.", 
         "churn": "The task is to predict the Target column of table Users, which means predicting whether the user will churn or not."
     },
-    
+    "custom": {
+        "repeater": "This task is to predict whether a user will repeat a purchase given the user's purchase history and user-item structural information"
+    },
 }
-
-
 
 
 def get_task_description(dataset: str, task_name: str):
@@ -43,7 +43,6 @@ def get_task_description(dataset: str, task_name: str):
         return task_description[dataset][task_name]
     except KeyError:
         return ""
-
 
 
 def get_task_meta_info(schema, selected_task):
