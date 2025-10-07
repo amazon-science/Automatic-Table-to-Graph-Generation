@@ -94,3 +94,6 @@ python -m main.autog2 /data/datasets/avs/synthetic sonnet35 autog-s avs:repeater
 python -m main.autog2 /data/datasets/avs/ sonnet3 autog-s avs:repeater
 
 python -m main.autog2 avs anthropic.claude-3-sonnet-20240229-v1:0 ./data/datasets autog-s repeater
+
+
+python -m main.autog2 /data/datasets/mag/old sonnet3 autog-s mag:venue
