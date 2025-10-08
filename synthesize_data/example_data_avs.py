@@ -14,10 +14,7 @@ def load_raw_table(datapath, source, fmt):
         if isinstance(arr, np.lib.npyio.NpzFile):
             tmp = {}
             for k in arr.files:
-                if k == 'feat':
-                    tmp[k] = list(arr['feat'])
-                else:
-                    tmp[k] = arr[k]
+                tmp[k] = arr[k]
             return pd.DataFrame(tmp)
         else:
             return pd.DataFrame(arr)
@@ -155,12 +152,12 @@ def synthesize_database(datapath, meta_file, size_config=None):
 
 def main_avs():
     size_config = {
-        "History": 1000,  # synthetic history records
-        "Offer": 50,  # synthetic offers
-        "Transaction": 2000,  # synthetic transactions
-        "repeater_train": 500,  # synthetic training samples
-        "repeater_val": 200,  # synthetic validation samples
-        "repeater_test": 200  # synthetic test samples
+        "History": 10000,  # synthetic history records
+        "Offer": 500,  # synthetic offers
+        "Transaction": 20000,  # synthetic transactions
+        "repeater_train": 5000,  # synthetic training samples
+        "repeater_val": 2000,  # synthetic validation samples
+        "repeater_test": 2000  # synthetic test samples
     }
 
     datapath = "./data/datasets/avs/old"
@@ -175,7 +172,7 @@ def main_avs():
 
     # copy metadata.yaml file
     shutil.copyfile(os.path.join(datapath, "metadata.yaml"), os.path.join(outpath, "metadata.yaml"))
-    # shutil.copyfile(os.path.join(datapath, "information.txt"), os.path.join(outpath, "information.txt"))
+    shutil.copyfile(os.path.join(datapath, "information.txt"), os.path.join(outpath, "information.txt"))
 
 
 if __name__ == '__main__':

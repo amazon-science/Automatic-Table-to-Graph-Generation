@@ -189,14 +189,14 @@ def main_mag():
 
     for name, (df, dstfile) in synthetic_dfs.items():
         print(f"\nSynthetic Table: {name} (rows={len(df)})")
-        print(df.head(5))
+        print(df.head(3))
         save_synthesized_table(df, outpath, dstfile)
 
     # copy metadata.yaml file
     shutil.copyfile(os.path.join(datapath, "metadata.yaml"),
                     os.path.join(outpath, "metadata.yaml"))
-    # shutil.copyfile(os.path.join(datapath, "information.txt"),
-    #                 os.path.join(outpath, "information.txt"))
+    shutil.copyfile(os.path.join(datapath, "information.txt"),
+                    os.path.join(outpath, "information.txt"))
 
 
 if __name__ == '__main__':
