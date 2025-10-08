@@ -43,12 +43,12 @@ def get_autog_actions():
     ADD_PK = add_primary_key
 
     actions = {
-        "generate_or_connect_dummy_table": G_DUMMY_T,
-        "connect_two_columns": C_TWO_C,
         "explode_multi_category_column": E_MULTI_C,
         "generate_non_dummy_table": G_NON_DUMMY_T, 
         "remove_primary_key": RM_PK,
-        "add_primary_key": ADD_PK
+        "add_primary_key": ADD_PK,
+        "generate_or_connect_dummy_table": G_DUMMY_T,
+        "connect_two_columns": C_TWO_C
     }
     return actions
 

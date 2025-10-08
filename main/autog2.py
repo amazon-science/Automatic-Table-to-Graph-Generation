@@ -11,8 +11,8 @@ from utils.misc import seed_everything
 from utils.data.rdb import load_dbb_dataset_from_cfg_path_no_name
 
 
-CONTEXT_SIZE = 32000
-OUTPUT_SIZE = 32000
+CONTEXT_SIZE = 65536
+OUTPUT_SIZE = 65536
 
 def retrieve_input_schema(full_schema):
     input_schema = {
@@ -155,13 +155,13 @@ def get_llm_config(llm_name):
             "context_size": CONTEXT_SIZE,
             "output_size": OUTPUT_SIZE
         },
-        "sonnet35": {
-            "model_name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+        "sonnet37": {
+            "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
             "context_size": CONTEXT_SIZE,
             "output_size": OUTPUT_SIZE
         },
         "sonnet4": {
-            "model_name": "anthropic.claude-sonnet-4-20250514-v1:0",
+            "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0",
             "context_size": CONTEXT_SIZE,
             "output_size": OUTPUT_SIZE
         },
@@ -177,6 +177,11 @@ def get_llm_config(llm_name):
         },
         "haiku3": {
             "model_name": "anthropic.claude-3-haiku-20240229-v1:0",
+            "context_size": CONTEXT_SIZE,
+            "output_size": OUTPUT_SIZE
+        },
+        "sonnet45": {
+            "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
             "context_size": CONTEXT_SIZE,
             "output_size": OUTPUT_SIZE
         }
@@ -212,9 +217,13 @@ def main(
 
     print(f'== {response}')
 
-    # start_pt = len('''Here's the analysis of the tables and columns based on the provided information:''')
-    start_pt = 0
-    metainfo = ast.literal_eval(response[start_pt:])
+    # handle response by extracting on the JSON contents for Sonnet 4
+    start = response.find('{')
+    end = response.rfind('}') + 1
+    val_response = response[start:end]
+    # start_pt = len('''Looking at the data analysis for each table, I'll identify the data types and provide descriptions:''')
+    # start_pt = 0
+    metainfo = ast.literal_eval(val_response)
     metainfo = {
         capitalize_first_alpha_concise(key): value 
         for key, value in metainfo.items()
@@ -251,7 +260,7 @@ def main(
         llm_model_name=llm_config["model_name"],
         context_size=llm_config["context_size"],
         path_to_file=autog_path,
-        llm_sleep=10,
+        llm_sleep=30,
         use_cache=False,
         threshold=20,
         output_size=llm_config["output_size"],
