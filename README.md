@@ -1,5 +1,13 @@
 # AutoG: Towards automatic graph construction from tabular data
 
+## Summary of updates for Oct 8 version
+
+* Improved docker configurations
+* Improved coding styles
+* Test suites under main/test_action_new.py
+* Fix bugs raised by @galogm
+* Test new programs on all 4dbinfer datasets, welcome issues and PRs if you find any new bugs
+
 ## Introduction
 
 ## Overview
