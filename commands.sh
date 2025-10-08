@@ -85,15 +85,4 @@ export AWS_ACCESS_KEY_ID=<YOUR_AWS_ACCESS_KEY_ID>
 export AWS_SECRET_ACCESS_KEY=<YOUR_AWS_SECRET_ACCESS_KEY>
 export AWS_SESSION_TOKEN=<YOUR_AWS_SESSION_TOKEN>
 
-# python -m main.autog2 mag anthropic.claude-3-sonnet-20240229-v1:0 ./data/datasets autog-s venue
-
-python -m main.autog2 /data/datasets/synthetic sonnet3 autog-s custom:repeater
-
-python -m main.autog2 /data/datasets/avs/synthetic sonnet35 autog-s avs:repeater
-
-python -m main.autog2 /data/datasets/avs/ sonnet3 autog-s avs:repeater
-
-python -m main.autog2 avs anthropic.claude-3-sonnet-20240229-v1:0 ./data/datasets autog-s repeater
-
-
-python -m main.autog2 /data/datasets/mag/old sonnet3 autog-s mag:venue
+python -m main.autog2 /data/datasets/mag/old sonnet4 autog-s mag:venue

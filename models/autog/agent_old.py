@@ -1,3 +1,5 @@
+import traceback
+
 from models.llm.bedrock import get_bedrock_llm, bedrock_llm_query
 import os
 from models.autog.action import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
@@ -224,6 +226,7 @@ class AutoG_Agent():
         full_prompts = get_multi_round_action_selection_prompt(
             action_description, example_str, history_str, schema, stats, self.task_description, deepjoin_prior
         )
+
         ## save the current prompt for debug 
         with open(os.path.join(self.dataset_cache_path, 'prompt.txt'), 'w') as f:
             f.write(full_prompts)
@@ -296,11 +299,12 @@ class AutoG_Agent():
         response = bedrock_llm_query(self.llm, this_round_prompt, max_tokens = self.output_size, cache=self.use_cache,
                                      debug=False, debug_dataset=self.dataset, debug_task=self.task_name,
                                      debug_round=epoch-1)
-        # print(f'Round {epoch} response: {response} ...')
+
+        print(f'Response: {response} ...')
 
         selection = extract_between_tags(response, "selection")[0].strip()
-        
-        print(f'Selection: {selection} ...')
+
+        # print(f'Selection: {selection} ...')
 
         if selection == "None":
             return this_round_dbb, False
@@ -317,10 +321,6 @@ class AutoG_Agent():
             last_valid_dbb = deepcopy(this_round_dbb)
             explanation = move['explanation']
             methods = move['action']
-            
-            if methods is None:
-                continue
-
             parameters = move['parameters']
             action_code = self.action_list[methods] 
             parameters['dbb'] = this_round_dbb
@@ -339,6 +339,7 @@ class AutoG_Agent():
                 this_round_dbb = self.update_task(this_round_dbb)
             except Exception as e:
                 ## recover from error
+                traceback.print_exc()
                 typer.echo(f"Error: {e}")
                 self.history.append("Error: " + str(e) + "Problem action: " + str(move))   
                 this_round_dbb = last_valid_dbb
