@@ -32,6 +32,8 @@ def save_synthesized_table(df, outpath, dstfile):
 
     if dstfile.endswith('npz'):
         data_dict = {col: df[col].values for col in df.columns}
+        if 'feat' in df.columns:
+            data_dict['feat'] = np.vstack(data_dict['feat'])
         np.savez_compressed(os.path.join(outpath, dstfile), **data_dict)
     elif dstfile.endswith('pqt'):
         df.to_parquet(os.path.join(outpath, dstfile), engine="pyarrow")
@@ -40,7 +42,7 @@ def save_synthesized_table(df, outpath, dstfile):
 
 def synthesize_column(col, dtype, n_rows):
     """ Generate synthetic column values based on dtype. """
-    if col.apply(lambda x: isinstance(x, (list, np.ndarray))).any():
+    if dtype == "float" and col.apply(lambda x: isinstance(x, (list, np.ndarray))).any():
         # find dimension of first valid vector
         first_vec = col[col.apply(lambda x: isinstance(x, (list, np.ndarray)))].iloc[0]
         dim = len(first_vec)
@@ -55,7 +57,7 @@ def synthesize_column(col, dtype, n_rows):
         new_feats = np.random.normal(mu, sigma, size=(n_rows, dim))
         return pd.Series(list(new_feats), dtype="object")
 
-    if dtype == "float":
+    elif dtype == "float":
         data = col.dropna().values.astype(float)
         if len(data) == 0:
             return np.zeros(n_rows)
@@ -164,20 +166,20 @@ def synthesize_database(datapath, meta_file, size_config=None):
 
 def main_mag():
     size_config = {
-        "Paper": 100,
-        "Cites": 500,
-        "HasTopic": 200,
-        "AffiliatedWith": 150,
-        "Writes": 250,
-        "venue_train": 50,
-        "venue_validation": 20,
-        "venue_test": 20,
-        "cite_train": 50,
-        "cite_validation": 20,
-        "cite_test": 20,
-        "year_train": 50,
-        "year_validation": 20,
-        "year_test": 20
+        "Paper": 1000,
+        "Cites": 5000,
+        "HasTopic": 2000,
+        "AffiliatedWith": 1500,
+        "Writes": 2500,
+        "venue_train": 500,
+        "venue_validation": 200,
+        "venue_test": 200,
+        "cite_train": 500,
+        "cite_validation": 200,
+        "cite_test": 200,
+        "year_train": 500,
+        "year_validation": 200,
+        "year_test": 200
     }
 
     datapath = "./data/datasets/mag/old"
@@ -193,6 +195,8 @@ def main_mag():
     # copy metadata.yaml file
     shutil.copyfile(os.path.join(datapath, "metadata.yaml"),
                     os.path.join(outpath, "metadata.yaml"))
+    # shutil.copyfile(os.path.join(datapath, "information.txt"),
+    #                 os.path.join(outpath, "information.txt"))
 
 
 if __name__ == '__main__':

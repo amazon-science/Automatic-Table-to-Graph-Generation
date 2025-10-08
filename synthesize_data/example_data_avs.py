@@ -175,6 +175,7 @@ def main_avs():
 
     # copy metadata.yaml file
     shutil.copyfile(os.path.join(datapath, "metadata.yaml"), os.path.join(outpath, "metadata.yaml"))
+    # shutil.copyfile(os.path.join(datapath, "information.txt"), os.path.join(outpath, "information.txt"))
 
 
 if __name__ == '__main__':
