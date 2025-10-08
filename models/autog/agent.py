@@ -1,5 +1,6 @@
 import os
-from models.autog.action import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
+# from models.autog.action import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
+from models.autog.action_new import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
 from prompts.mautog import get_multi_round_action_selection_prompt, get_single_round_multi_step_prompt
 
 from models.llm.gconstruct import extract_between_tags, analyze_dataframes, dummy_llm_interaction

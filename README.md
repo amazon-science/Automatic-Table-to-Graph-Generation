@@ -33,21 +33,9 @@ Then create a mapping for consistent installation
 docker run --gpus all -it -v ../Automatic-Table-to-Graph-Generation:/workspace -v ./opt:/opt autog /bin/bash
 ```
 
-Then 
+Then you need to configure the LD_LIBRARY_PATH
 ``` bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && bash /tmp/miniconda.sh -b -p /opt/conda && rm /tmp/miniconda.sh
-conda init && source ~/.bashrc && cd /workspace/multi-table-benchmark && bash conda/create_conda_env.sh -s -g 11.7 -p 3.9 -t 1.13.1 
-source ~/.bashrc
-pip install codetiming humanfriendly sentence_transformers==3.3.0 transformers==4.44.2 nltk==3.9.1
-```
-
-```bash
-# Install 4dbinfer-related libraries
-cd multi-table-benchmark
-bash conda/create_conda_env.sh
-
-# Clone DeepJoin to download the language model
-git clone https://github.com/mutong184/deepjoin
+export LD_LIBRARY_PATH="/opt/conda/envs/dbinfer-gpu/lib:$LD_LIBRARY_PATH"
 ```
 
 ### Step 3: Optional Dependencies
@@ -62,6 +50,9 @@ pip install valentine
 ## Usage
 
 ### 1. Dataset Preparation
+
+You need to first configure your kaggle credentials for downloading  the `ieee-cis` dataset
+
 
 Generate the preprocessing dataset:
 

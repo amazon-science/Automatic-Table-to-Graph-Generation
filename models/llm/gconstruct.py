@@ -252,49 +252,153 @@ def analyze_dataframes(dataframes, k=5, dbb = None):
     return output_string 
 
 
-def dummy_llm_interaction(query_text: str, query_filepath: str = "query.txt", response_filepath: str = "response.txt") -> str:
+def dummy_llm_interaction(
+    query_text: str,
+    query_filepath: str = "query.txt",
+    response_filepath: str = "response.txt",
+    use_cache: bool = True,
+    dataset: str = "",
+    task: str = "",
+    round_num: int = 0
+) -> str:
     """
-    Simulates an interaction with an LLM by saving the query to a file,
-    prompting the user to manually get the LLM response and save it to another file,
-    and then reading that response.
+    Simulates an interaction with an LLM with automatic cache support.
+
+    This function can:
+    1. Load pre-cached responses from test files (for testing/debugging)
+    2. Fall back to manual LLM interaction mode if cache unavailable
 
     Args:
-        query_text: The query to send to the (simulated) LLM.
-        query_filepath: The path to the file where the query will be saved.
-        response_filepath: The path to the file where the user should save the LLM's response.
+        query_text: The query to send to the (simulated) LLM
+        query_filepath: Path to save the query file
+        response_filepath: Path where user should save the LLM response
+        use_cache: If True, try to load from test cache first
+        dataset: Dataset name (for cache lookup)
+        task: Task name (for cache lookup)
+        round_num: Current round number (for multi-round cache)
 
     Returns:
-        The content of the response file, presumed to be the LLM's output.
+        The LLM response (from cache or manual file)
+
+    Cache File Format:
+        test/{dataset}_{task}.txt contains one response per line.
+        Line N corresponds to round N (0-indexed).
+    """
+    # Try cache first if enabled
+    if use_cache and dataset and task:
+        cache_response = _try_load_from_cache(dataset, task, round_num)
+        if cache_response is not None:
+            print(f"✓ Cache hit: Loaded response for {dataset}/{task} round {round_num}")
+            # Still save query for reference
+            _save_query_file(query_text, query_filepath)
+            return cache_response
+
+    # Fall back to manual interaction
+    print(f"Cache miss or disabled - using manual LLM interaction mode")
+    return _manual_llm_interaction(query_text, query_filepath, response_filepath)
+
+
+def _try_load_from_cache(dataset: str, task: str, round_num: int):
+    """
+    Try to load cached LLM response from test directory.
+
+    Args:
+        dataset: Dataset name
+        task: Task name
+        round_num: Round number (0-indexed)
+
+    Returns:
+        Cached response if found, None otherwise
+    """
+    # Build cache file path
+    this_file_dir = os.path.dirname(os.path.realpath(__file__))
+    test_dir = os.path.join(this_file_dir, '..', '..', "test")
+    cache_file = os.path.join(test_dir, f"{dataset}_{task}.txt")
+
+    # Check if cache file exists
+    if not os.path.exists(cache_file):
+        print(f"Cache file not found: {cache_file}")
+        return None
+
+    try:
+        # Read all cached responses
+        with open(cache_file, 'r', encoding='utf-8') as f:
+            cached_responses = [line.strip() for line in f if line.strip()]
+
+        # Check if we have a response for this round
+        if round_num >= len(cached_responses):
+            print(f"No cached response for round {round_num} (file has {len(cached_responses)} rounds)")
+            return None
+
+        response = cached_responses[round_num]
+
+        # Handle special "no more actions" marker
+        if response == "<selection>None</selection>":
+            print(f"Cache indicates no more actions for round {round_num}")
+            return response
+
+        return response
+
+    except Exception as e:
+        print(f"Error loading cache: {e}")
+        return None
+
+
+def _save_query_file(query_text: str, query_filepath: str) -> None:
+    """Save query to file for reference."""
+    try:
+        with open(query_filepath, 'w', encoding='utf-8') as q_file:
+            q_file.write(query_text)
+        print(f"Query saved to: {os.path.abspath(query_filepath)}")
+    except Exception as e:
+        print(f"Warning: Could not save query file: {e}")
+
+
+def _manual_llm_interaction(
+    query_text: str,
+    query_filepath: str,
+    response_filepath: str
+) -> str:
+    """
+    Manual LLM interaction mode - prompts user to copy/paste.
+
+    Args:
+        query_text: The query to send
+        query_filepath: Path to save query
+        response_filepath: Path where user saves response
+
+    Returns:
+        Content of the response file
     """
     try:
         # 1. Store the query content to a file
-        with open(query_filepath, 'w', encoding='utf-8') as q_file:
-            q_file.write(query_text)
-        print(f"Query successfully written to: {os.path.abspath(query_filepath)}")
+        _save_query_file(query_text, query_filepath)
 
         # 2. Halt the program and prompt the user
-        print("\n--- ACTION REQUIRED ---")
+        print("\n" + "=" * 60)
+        print("ACTION REQUIRED: Manual LLM Interaction")
+        print("=" * 60)
         print(f"1. Open the file: {os.path.abspath(query_filepath)}")
-        print(f"2. Copy the query from '{query_filepath}'.")
-        print(f"3. Paste the query into your preferred LLM interface (e.g., in a web browser).")
-        print(f"4. Copy the LLM's complete response.")
-        print(f"5. Paste the response into a new file and save it as: {os.path.abspath(response_filepath)}")
-        print("---")
+        print(f"2. Copy the query from '{query_filepath}'")
+        print(f"3. Paste the query into your preferred LLM interface (e.g., web browser)")
+        print(f"4. Copy the LLM's complete response")
+        print(f"5. Save the response to: {os.path.abspath(response_filepath)}")
+        print("=" * 60 + "\n")
 
         # Loop until the response file is found
         while not os.path.exists(response_filepath):
             input(f"Press Enter after you have saved the LLM's response to '{response_filepath}'...")
             if not os.path.exists(response_filepath):
-                print(f"File not found: {os.path.abspath(response_filepath)}. Please ensure you have saved the file correctly.")
+                print(f"✗ File not found: {os.path.abspath(response_filepath)}")
+                print("Please ensure you have saved the file correctly.")
             else:
-                print(f"Response file found: {os.path.abspath(response_filepath)}")
-                break # Exit loop once file is found
+                print(f"✓ Response file found: {os.path.abspath(response_filepath)}")
+                break
 
         # 3. Read the content of the response file
-        llm_response = ""
         with open(response_filepath, 'r', encoding='utf-8') as r_file:
             llm_response = r_file.read()
-        print(f"\nLLM response successfully read from: {os.path.abspath(response_filepath)}")
+        print(f"✓ LLM response successfully read from: {os.path.abspath(response_filepath)}\n")
 
         return llm_response
 

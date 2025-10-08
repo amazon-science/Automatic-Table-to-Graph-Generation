@@ -49,7 +49,6 @@ tmp/*
 dataset/
 dataset/*
 
-test*
 
 
 catboost_info/
@@ -85,3 +84,19 @@ multi-table-benchmark/*.sh
 CLAUDE.md
 
 tab2graph/
+
+AGENT_REFACTORING.md
+
+/models/*.md
+
+/models/autog/*.md
+
+kaggle.json 
+
+feedback.md
+
+TEST_FIXES_NEEDED.md
+
+/models/autog/action_new_*
+
+
