@@ -4,10 +4,15 @@ import typer
 import numpy as np
 from rich import traceback
 from models.autog.agent_old import AutoG_Agent
+from models.llm.bedrock import get_bedrock_llm
 from prompts.task import get_task_description
+from prompts.identify import identify_prompt
 from utils.misc import seed_everything
 from utils.data.rdb import load_dbb_dataset_from_cfg_path_no_name
 
+
+CONTEXT_SIZE = 65536
+OUTPUT_SIZE = 65536
 
 def retrieve_input_schema(full_schema):
     input_schema = {
@@ -137,8 +142,8 @@ def get_llm_config(llm_name):
     configs = {
         "sonnet3": {
             "model_name": "anthropic.claude-3-sonnet-20240229-v1:0",
-            "context_size": 200000,
-            "output_size": 4096
+            "context_size": CONTEXT_SIZE,
+            "output_size": OUTPUT_SIZE
         },
         "llama3": {
             "model_name": "meta.llama3-70b-instruct-v1:0",
@@ -147,34 +152,48 @@ def get_llm_config(llm_name):
         },
         "mistralarge": {
             "model_name": "mistral.mistral-large-2402-v1:0",
-            "context_size": 32000,
-            "output_size": 4096
+            "context_size": CONTEXT_SIZE,
+            "output_size": OUTPUT_SIZE
         },
-        "sonnet35": {
-            "model_name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-            "context_size": 200000,
-            "output_size": 4096
+        "sonnet37": {
+            "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+            "context_size": CONTEXT_SIZE,
+            "output_size": OUTPUT_SIZE
+        },
+        "sonnet4": {
+            "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0",
+            "context_size": CONTEXT_SIZE,
+            "output_size": OUTPUT_SIZE
         },
         "opus3": {
             "model_name": "anthropic.claude-3-opus-20240229-v1:0",
-            "context_size": 200000,
-            "output_size": 4096
+            "context_size": CONTEXT_SIZE,
+            "output_size": OUTPUT_SIZE
+        },
+        "opus4": {
+            "model_name": "anthropic.claude-opus-4-20250514-v1:0",
+            "context_size": CONTEXT_SIZE,
+            "output_size": OUTPUT_SIZE
         },
         "haiku3": {
             "model_name": "anthropic.claude-3-haiku-20240229-v1:0",
-            "context_size": 200000,
-            "output_size": 4096
+            "context_size": CONTEXT_SIZE,
+            "output_size": OUTPUT_SIZE
+        },
+        "sonnet45": {
+            "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+            "context_size": CONTEXT_SIZE,
+            "output_size": OUTPUT_SIZE
         }
     }
     return configs.get(llm_name, configs["sonnet3"])
 
 
 def main(
-    dataset: str = typer.Argument("mag", help="The dataset name of the RDB dataset"),
+    dataset_path: str = typer.Argument(..., help="The path to the dataset"),
     llm_name: str = typer.Argument("sonnet3", help="The name of the LLM model to use."),
-    schema_path: str = typer.Argument("newdatasets", help="Path to the data storage directory."),
     method: str = typer.Argument("autog-s", help="The method to run the model."),
-    task_name: str = typer.Argument("venue", help="Name of the task to fit the solution."),
+    task_name: str = typer.Argument("mag:venue", help="Name of the task to fit the solution."),
     seed: int = typer.Option(0, help="The seed to use for the model."),
     lm_path: str = typer.Option("deepjoin/output/deepjoin_webtable_training-all-mpnet-base-v2-2023-10-18_19-54-27")
 ):
@@ -184,34 +203,54 @@ def main(
 
     # Get LLM configuration
     llm_config = get_llm_config(llm_name)
+    print(f'Using the following LLM configurations:{llm_config}')
     
-    # Setup paths
-    path_of_the_dataset = f"{schema_path}/{dataset}"
-    autog_path = os.path.join(path_of_the_dataset, "autog")
-    os.makedirs(autog_path, exist_ok=True)
+    #TODO: automatically create the information contents
+    info_path = os.path.join(dataset_path, 'information.txt')
+    with open(info_path, 'r') as f:
+        analysis_rst = f.read()
+    identify_inputs = identify_prompt(analysis_rst)
+    # print(identify_inputs)
 
-    # Load metadata
-    metainfo_path = os.path.join(path_of_the_dataset, 'type.txt')
-    metainfo = read_txt_dict(metainfo_path)
+    bedrock_llm = get_bedrock_llm(llm_config["model_name"], context_size=llm_config["context_size"])
+    response = bedrock_llm.complete(identify_inputs, max_tokens=OUTPUT_SIZE).text
+
+    print(f'== {response}')
+
+    # handle response by extracting on the JSON contents for Sonnet 4
+    start = response.find('{')
+    end = response.rfind('}') + 1
+    val_response = response[start:end]
+    # start_pt = len('''Looking at the data analysis for each table, I'll identify the data types and provide descriptions:''')
+    # start_pt = 0
+    metainfo = ast.literal_eval(val_response)
     metainfo = {
         capitalize_first_alpha_concise(key): value 
         for key, value in metainfo.items()
     }
 
     # Load dataset information
-    information_path = os.path.join(path_of_the_dataset, 'information.txt')
+    information_path = os.path.join(dataset_path, 'information.txt')
     with open(information_path, 'r') as file:
         information = file.read()
 
     # Load and prepare data
-    old_data_config_path = os.path.join(path_of_the_dataset, 'old')
+    old_data_config_path = os.path.join(dataset_path)
     multi_tabular_data = load_dbb_dataset_from_cfg_path_no_name(old_data_config_path)
-    task_description = get_task_description(dataset, task_name)
+    dataset, task = task_name.split(':')[0], task_name.split(':')[1]
+    task_description = get_task_description(dataset, task)
+    
+    print(f'The task for {dataset} data: {task_description}')
+
     schema_input = generate_training_metainfo(
         multi_tabular_data, 
         metainfo, 
-        this_task=task_name
+        this_task=task
     )
+
+    # Setup paths
+    autog_path = os.path.join(dataset_path, "autog")
+    os.makedirs(autog_path, exist_ok=True)
 
     # Initialize and run agent
     agent = AutoG_Agent(
@@ -221,13 +260,13 @@ def main(
         llm_model_name=llm_config["model_name"],
         context_size=llm_config["context_size"],
         path_to_file=autog_path,
-        llm_sleep=1,
+        llm_sleep=30,
         use_cache=False,
-        threshold=10,
+        threshold=20,
         output_size=llm_config["output_size"],
         task_description=task_description,
         dataset=dataset,
-        task_name=task_name,
+        task_name=task,
         schema_info=information,
         lm_path=lm_path
     )

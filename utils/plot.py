@@ -6,7 +6,11 @@ from PIL import Image
 def plot_rdb_dataset_schema(dataset, output_path: str):
     output_name = f"{output_path}.pdf"
     output_jpg_name = f"{output_path}.png"
+
     sa_metadata = dataset.sqlalchemy_metadata
+
+    print(sa_metadata.tables)
+
     # import ipdb; ipdb.set_trace()
     graph = create_schema_graph(engine=create_engine('sqlite://'),  # Use a temporary in-memory sqlite db.
                             metadata=sa_metadata,
