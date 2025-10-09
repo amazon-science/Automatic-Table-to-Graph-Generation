@@ -4,6 +4,8 @@ import hashlib
 import sqlite3
 import typer
 
+
+
 class LLMCache:
     def __init__(self, db_name="llm_cache.db"):
         self.conn = sqlite3.connect(db_name)
@@ -44,8 +46,7 @@ class LLMCache:
         self.conn.close()
 
 
-
-def get_bedrock_llm(model_name="anthropic.claude-3-sonnet-20240229-v1:0", context_size=4096):
+def get_bedrock_llm(model_name="anthropic.claude-3-sonnet-20240229-v1:0", context_size=4096, output_size=8192):
     aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
     aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
     aws_session_token = os.environ.get("AWS_SESSION_TOKEN")
@@ -56,7 +57,8 @@ def get_bedrock_llm(model_name="anthropic.claude-3-sonnet-20240229-v1:0", contex
     aws_secret_access_key=aws_secret_access_key,
     aws_session_token=aws_session_token,
     region_name=aws_region_name,
-    context_size=context_size
+    context_size=context_size,
+    output_size=output_size
     )
     return llm 
 

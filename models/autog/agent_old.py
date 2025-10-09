@@ -1,3 +1,5 @@
+import traceback
+
 from models.llm.bedrock import get_bedrock_llm, bedrock_llm_query
 import os
 from models.autog.action import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
@@ -18,6 +20,10 @@ import json
 from copy import deepcopy
 from utils.plot import plot_rdb_dataset_schema
 from dbinfer_bench.dataset_meta import DBBColumnSchema
+
+
+OUTPUT_SIZE = 32000
+
 
 def format_top_k_similarities(dbb, similarity_dict: Dict[Tuple[str, str, str, str], float], k: int) -> str:
     """Formats the top k most similar pairs into a string.
@@ -183,9 +189,7 @@ class AutoG_Agent():
             if os.path.isdir(os.path.join(self.dataset_cache_path, dir)) and "backup_" in dir:
                 full_path = os.path.join(self.dataset_cache_path, dir)
                 shutil.rmtree(full_path, ignore_errors=True)
-    
-    
-    
+
     def retrieve_icl_samples(self):
         """
             Retrieve the ICL samples
@@ -222,6 +226,7 @@ class AutoG_Agent():
         full_prompts = get_multi_round_action_selection_prompt(
             action_description, example_str, history_str, schema, stats, self.task_description, deepjoin_prior
         )
+
         ## save the current prompt for debug 
         with open(os.path.join(self.dataset_cache_path, 'prompt.txt'), 'w') as f:
             f.write(full_prompts)
@@ -291,8 +296,16 @@ class AutoG_Agent():
         # import ipdb; ipdb.set_trace()
         this_round_dbb = dbb
         this_round_prompt = self.pack_prompts(this_round_dbb)
-        response = bedrock_llm_query(self.llm, this_round_prompt, max_tokens = self.output_size, cache=self.use_cache, debug_dataset=self.dataset, debug_task=self.task_name, debug_round=epoch-1)
+        response = bedrock_llm_query(self.llm, this_round_prompt, max_tokens = self.output_size, cache=self.use_cache,
+                                     debug=False, debug_dataset=self.dataset, debug_task=self.task_name,
+                                     debug_round=epoch-1)
+
+        print(f'Response: {response} ...')
+
         selection = extract_between_tags(response, "selection")[0].strip()
+
+        # print(f'Selection: {selection} ...')
+
         if selection == "None":
             return this_round_dbb, False
         # method = extract_between_tags(response, "construction")[0].strip()
@@ -326,6 +339,7 @@ class AutoG_Agent():
                 this_round_dbb = self.update_task(this_round_dbb)
             except Exception as e:
                 ## recover from error
+                traceback.print_exc()
                 typer.echo(f"Error: {e}")
                 self.history.append("Error: " + str(e) + "Problem action: " + str(move))   
                 this_round_dbb = last_valid_dbb
@@ -461,12 +475,21 @@ class AutoG_Agent():
             with open(os.path.join(self.dataset_cache_path, 'metadata.yaml'), 'w') as f:
                 yaml.dump(self.state, f)
             if i == 0 and (not os.path.exists(os.path.join(self.dataset_cache_path, 'data')) or len(os.listdir(os.path.join(self.dataset_cache_path, 'data'))) == 0):
-                ## initial state, move the data from old to autog
-                parent_dir = os.path.join(self.path_to_file, '..', 'old')
+                # initial state, move the data from old to autog
+                parent_dir = os.path.dirname(self.path_to_file)
+
                 initial_data_path = os.path.join(parent_dir, 'data')
                 initial_task_path = os.path.join(parent_dir, self.task_name)
+                
+                
                 target_data_path = os.path.join(self.dataset_cache_path, 'data')
+                # target_data_path = os.path.join(self.dataset_cache_path)
                 target_task_path = os.path.join(self.dataset_cache_path, self.task_name)
+                # target_task_path = os.path.join(self.dataset_cache_path)
+                
+                print(f'Initial data path: {initial_data_path} to target data path: {target_data_path}')
+                print(f'Initial task path: {initial_task_path} to target task path: {target_task_path}')
+
                 copy_directory(initial_data_path, target_data_path)
                 copy_directory(initial_task_path, target_task_path)
                 self.round += 1
@@ -496,3 +519,7 @@ class AutoG_Agent():
             else:
                 dbb = res
                 time.sleep(self.llm_sleep)
+
+        res.save(os.path.join(self.path_to_file, 'final'))
+        ## plot the schema
+        plot_rdb_dataset_schema(res, os.path.join(self.path_to_file, 'final', 'schema'))
