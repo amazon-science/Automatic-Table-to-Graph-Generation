@@ -30,8 +30,23 @@ def parquet_loader(path : str) -> Dict[str, np.ndarray]:
     return { col : df[col].to_numpy() for col in df }
 
 def numpy_loader(path : str) -> Dict[str, np.ndarray]:
+    """Load numpy npz file with eager array loading to avoid lazy decompression issues.
+
+    FIXED: npz[name] triggers lazy decompression which can fail if the file is
+    modified/corrupted between np.load() and access. We force eager loading by
+    copying arrays immediately and closing the file.
+    """
     npz = np.load(path, allow_pickle=True)
-    return { name : npz[name] for name in npz.files }
+    try:
+        # Force eager loading: copy all arrays to memory before closing
+        result = {}
+        for name in npz.files:
+            # Copy to ensure data is loaded into memory (not lazy-loaded)
+            result[name] = np.array(npz[name], copy=True)
+        return result
+    finally:
+        # Always close the npz file to release file handle
+        npz.close()
 
 LOADER_MAP = {
     DBBTableDataFormat.PARQUET : parquet_loader,

@@ -55,7 +55,14 @@ git lfs pull
 # ---------- Download and process MAG data
 # 1. modify the ./scripts/download.sh code
 #    - specify the "dataset_path" if needed
-#    - comment out commands for non-mag data except for mag
+
+#    - to use IEEE-CIS data, please install and configure kaggle library
+pip install kaggle
+# login in kaggle.com, and in your account setting, create a new API token or
+# find the "kaggle.json" file you have created before, and then
+mkdir -p ~/.kaggle
+mv ~/Downloads/kaggle.json ~/.kaggle/
+chmod 600 ~/.kaggle/kaggle.json
 
 # cd to the root path of the repo
 cd Automatic-Table-to-Graph-Generation
