@@ -46,6 +46,11 @@ def synthesize_column(col, dtype, n_rows):
         synth = np.random.normal(mu, sigma if sigma > 0 else 1, size=n_rows)
         return np.clip(synth, data.min(), data.max()).round(4)
 
+    elif dtype == "int":
+        min_val, max_val = int(col.min()), int(col.max())
+        values = np.random.randint(min_val, max_val + 1, n_rows, dtype=np.int64)
+        return pd.Series(values, dtype="int64")
+
     elif dtype == "category":
         freqs = col.value_counts(normalize=True)
         return np.random.choice(freqs.index, size=n_rows, p=freqs.values)
@@ -86,7 +91,9 @@ def synthesize_table(df, table_meta, fk_maps, n_rows=None, schema_table_names=No
         dtype = col_meta["dtype"]
 
         if dtype == "primary_key":
-            new_ids = [str(uuid.uuid4()) for _ in range(n_rows)]
+            # new_ids = [str(uuid.uuid4()) for _ in range(n_rows)]
+            new_ids = np.random.randint(int(df[col].values.min()), int(df[col].values.max()),
+                                        n_rows, dtype=np.int64)
             synthetic_df[col] = new_ids
             # Map original IDs (cycled if needed)
             orig_ids = np.resize(df[col].values, n_rows)
@@ -98,7 +105,10 @@ def synthesize_table(df, table_meta, fk_maps, n_rows=None, schema_table_names=No
 
             if (ref_table not in schema_table_names) or (ref_key not in fk_maps):
                 # If n mapping available, to synthesize fresh IDs
-                synthetic_df[col] = [str(uuid.uuid4()) for _ in range(n_rows)]
+                # synthetic_df[col] = [str(uuid.uuid4()) for _ in range(n_rows)]
+                synthetic_df[col] = np.random.randint(int(df[col].values.min()),
+                                                      int(df[col].values.max()), n_rows,
+                                                      dtype=np.int64)
             else:
                 ref_map = fk_maps[ref_key]
                 orig_vals = np.resize(df[col].values, n_rows)
@@ -126,7 +136,6 @@ def synthesize_database(datapath, meta_file, size_config=None):
     for table_name, table_meta in list(remaining.items()):
         print("Processing table", table_name)
         df = load_raw_table(datapath, table_meta["source"], table_meta["format"])
-        # print("\t", df)
         n_rows = size_config.get(table_name, len(df)) if size_config else len(df)
         synth_df, id_map = synthesize_table(df, table_meta, fk_maps, n_rows, remaining)
         synthetic_dfs[table_name] = (synth_df, table_meta["source"])
@@ -141,15 +150,12 @@ def synthesize_database(datapath, meta_file, size_config=None):
         for split in ["train", "validation", "test"]:
             source = task_meta["source"].replace("{split}", split)
             if os.path.exists(os.path.join(datapath, source)):
-                print("Processing tasks", source)
                 df = load_raw_table(datapath, source, task_meta["format"])
-                # print("\t", df)
                 task_name = f"{task_meta['name']}_{split}"
                 n_rows = size_config.get(task_name, len(df)) if size_config else len(df)
                 synth_df, _ = synthesize_table(df, task_meta, fk_maps, n_rows, remaining)
                 synthetic_dfs[task_name] = (synth_df, source)
 
-    # print(">", synthetic_dfs)
     return synthetic_dfs
 
 
@@ -176,11 +182,13 @@ def main_avs(args):
     # copy metadata.yaml file
     shutil.copyfile(os.path.join(input_path, "metadata.yaml"),
                     os.path.join(output_path, "metadata.yaml"))
+    shutil.copyfile(os.path.join(input_path, "information.txt"),
+                    os.path.join(output_path, "information.txt"))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data-path", type=str, default='/data/datasets/avs/',
+    parser.add_argument("--data-path", type=str, default='./data/datasets/avs/',
                         help=("The path to the root of avs dataset, and where the "
                               "synthetic avs data to be saved."))
     args = parser.parse_args()
