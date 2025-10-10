@@ -1,5 +1,4 @@
-import os
-import argparse
+import os.path
 import shutil
 import pandas as pd
 import numpy as np
@@ -8,13 +7,16 @@ import yaml
 
 
 def load_raw_table(datapath, source, fmt):
-    """ Load table data from directory of parquets. """
+    """ Load table data from npz or parquet. """
     if fmt == "numpy":
         arr = np.load(os.path.join(datapath, source), allow_pickle=True)
         if isinstance(arr, np.lib.npyio.NpzFile):
             tmp = {}
             for k in arr.files:
-                tmp[k] = arr[k]
+                if k == 'feat':
+                    tmp[k] = list(arr['feat'])
+                else:
+                    tmp[k] = arr[k]
             return pd.DataFrame(tmp)
         else:
             return pd.DataFrame(arr)
@@ -23,14 +25,16 @@ def load_raw_table(datapath, source, fmt):
     else:
         raise ValueError(f"Unsupported format: {fmt}")
 
-
 def save_synthesized_table(df, outpath, dstfile):
     """ Save synthesized table. """
     # Create the directory if it doesn't exist
     os.makedirs(os.path.dirname(os.path.join(outpath, dstfile)), exist_ok=True)
 
     if dstfile.endswith('npz'):
-        np.savez_compressed(os.path.join(outpath, dstfile), df)
+        data_dict = {col: df[col].values for col in df.columns}
+        if 'feat' in df.columns:
+            data_dict['feat'] = np.vstack(data_dict['feat'])
+        np.savez_compressed(os.path.join(outpath, dstfile), **data_dict)
     elif dstfile.endswith('pqt'):
         df.to_parquet(os.path.join(outpath, dstfile), engine="pyarrow")
 
@@ -38,7 +42,22 @@ def save_synthesized_table(df, outpath, dstfile):
 
 def synthesize_column(col, dtype, n_rows):
     """ Generate synthetic column values based on dtype. """
-    if dtype == "float":
+    if dtype == "float" and col.apply(lambda x: isinstance(x, (list, np.ndarray))).any():
+        # find dimension of first valid vector
+        first_vec = col[col.apply(lambda x: isinstance(x, (list, np.ndarray)))].iloc[0]
+        dim = len(first_vec)
+
+        # compute per-dimension mean/std if possible
+        mat = np.stack(col.dropna().apply(lambda x: np.array(x)))
+        mu = mat.mean(axis=0)
+        sigma = mat.std(axis=0)
+        sigma[sigma == 0] = 1.0  # avoid degenerate std
+
+        # synthesize vectors
+        new_feats = np.random.normal(mu, sigma, size=(n_rows, dim))
+        return pd.Series(list(new_feats), dtype="object")
+
+    elif dtype == "float":
         data = col.dropna().values.astype(float)
         if len(data) == 0:
             return np.zeros(n_rows)
@@ -62,7 +81,6 @@ def synthesize_column(col, dtype, n_rows):
     else:
         return np.random.choice(col.dropna(), size=n_rows)
 
-
 def create_missing_table(col_name, fk_values, n_rows=100):
     """ Create a synthetic table for missing foreign-key references. """
     if n_rows is None:
@@ -71,7 +89,6 @@ def create_missing_table(col_name, fk_values, n_rows=100):
     df = pd.DataFrame({col_name: synthetic_ids})
     id_map = {orig: np.random.choice(synthetic_ids) for orig in set(fk_values)}
     return df, id_map
-
 
 def synthesize_table(df, table_meta, fk_maps, n_rows=None, schema_table_names=None):
     """ Synthesize one table given metadata + fk mappings. """
@@ -112,7 +129,6 @@ def synthesize_table(df, table_meta, fk_maps, n_rows=None, schema_table_names=No
 
     return synthetic_df, id_map
 
-
 def synthesize_database(datapath, meta_file, size_config=None):
     """ Generate synthetic database from metadata.yaml. """
     schema = yaml.safe_load(open(os.path.join(datapath, meta_file)))
@@ -126,7 +142,6 @@ def synthesize_database(datapath, meta_file, size_config=None):
     for table_name, table_meta in list(remaining.items()):
         print("Processing table", table_name)
         df = load_raw_table(datapath, table_meta["source"], table_meta["format"])
-        # print("\t", df)
         n_rows = size_config.get(table_name, len(df)) if size_config else len(df)
         synth_df, id_map = synthesize_table(df, table_meta, fk_maps, n_rows, remaining)
         synthetic_dfs[table_name] = (synth_df, table_meta["source"])
@@ -141,47 +156,48 @@ def synthesize_database(datapath, meta_file, size_config=None):
         for split in ["train", "validation", "test"]:
             source = task_meta["source"].replace("{split}", split)
             if os.path.exists(os.path.join(datapath, source)):
-                print("Processing tasks", source)
                 df = load_raw_table(datapath, source, task_meta["format"])
-                # print("\t", df)
                 task_name = f"{task_meta['name']}_{split}"
                 n_rows = size_config.get(task_name, len(df)) if size_config else len(df)
                 synth_df, _ = synthesize_table(df, task_meta, fk_maps, n_rows, remaining)
                 synthetic_dfs[task_name] = (synth_df, source)
 
-    # print(">", synthetic_dfs)
     return synthetic_dfs
 
-
-def main_avs(args):
+def main_mag():
     size_config = {
-        "History": 10000,  # synthetic history records
-        "Offer": 500,  # synthetic offers
-        "Transaction": 20000,  # synthetic transactions
-        "repeater_train": 5000,  # synthetic training samples
-        "repeater_val": 2000,  # synthetic validation samples
-        "repeater_test": 2000  # synthetic test samples
+        "Paper": 1000,
+        "Cites": 5000,
+        "HasTopic": 2000,
+        "AffiliatedWith": 1500,
+        "Writes": 2500,
+        "venue_train": 500,
+        "venue_validation": 200,
+        "venue_test": 200,
+        "cite_train": 500,
+        "cite_validation": 200,
+        "cite_test": 200,
+        "year_train": 500,
+        "year_validation": 200,
+        "year_test": 200
     }
 
-    input_path = os.path.join(args.data_path, "old")
-    synthetic_dfs = synthesize_database(input_path, "metadata.yaml", size_config=size_config)
+    datapath = "./data/datasets/mag/old"
+    synthetic_dfs = synthesize_database(datapath, "metadata.yaml", size_config=size_config)
 
-    output_path = os.path.join(args.data_path, "synthetic")
+    outpath = "./data/datasets/mag/synthetic"
 
     for name, (df, dstfile) in synthetic_dfs.items():
         print(f"\nSynthetic Table: {name} (rows={len(df)})")
         print(df.head(3))
-        save_synthesized_table(df, output_path, dstfile)
+        save_synthesized_table(df, outpath, dstfile)
 
     # copy metadata.yaml file
-    shutil.copyfile(os.path.join(input_path, "metadata.yaml"),
-                    os.path.join(output_path, "metadata.yaml"))
+    shutil.copyfile(os.path.join(datapath, "metadata.yaml"),
+                    os.path.join(outpath, "metadata.yaml"))
+    shutil.copyfile(os.path.join(datapath, "information.txt"),
+                    os.path.join(outpath, "information.txt"))
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data-path", type=str, default='/data/datasets/avs/',
-                        help=("The path to the root of avs dataset, and where the "
-                              "synthetic avs data to be saved."))
-    args = parser.parse_args()
-    main_avs(args)
+    main_mag()
