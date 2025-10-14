@@ -302,7 +302,7 @@ tasks:
         cites = pd.read_parquet(osp.join(expert_path, "data", "cites.pqt"))
         affiliated_with.to_parquet(osp.join(old_path, "data", "affiliated_with.pqt"))
         cites.to_parquet(osp.join(old_path, "data", "cites.pqt"))
-        information = analyze_dataframes({'Table paper': dict_file, 'Table Cites': cites, 'Table HasTopic': has_topic, 'Table AffiliatedWith': affiliated_with, 'Table Writes': writes}, k = 5)
+        information = analyze_dataframes({'Table Paper': dict_file, 'Table Cites': cites, 'Table HasTopic': has_topic, 'Table AffiliatedWith': affiliated_with, 'Table Writes': writes}, k = 5)
         with open(f"{dataset_path}/mag/information.txt", "w") as f:
             f.write(information)
     elif dataset == "IEEE-CIS":

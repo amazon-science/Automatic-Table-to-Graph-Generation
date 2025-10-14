@@ -119,7 +119,7 @@ fi
 if [[ ${cpu} -eq 1 ]]; then
   torchversion=${torch_version}"+cpu"
   dgl_package_link="https://data.dgl.ai/wheels-test/repo.html"
-  name="dbinfer-cpu"
+  name="autog-cpu"
 fi
 
 # Set up GPU mode.
@@ -136,7 +136,7 @@ if [[ -n ${cuda_version} ]]; then
   torchversion=${torch_version}"+cu"${cuda_version//[-._]/}
   dgl_package_link="https://data.dgl.ai/wheels-test/cu"${cuda_version//[-._]/}"/repo.html"
   dgl_version=${dgl_version}"+cu"${cuda_version//[-._]/}
-  name="dbinfer-gpu"
+  name="autog-gpu"
 fi
 
 # Set python version.
@@ -152,7 +152,7 @@ echo "Current working directory: ${PWD}"
 rand=$(echo "${RANDOM}" | md5sum | head -c 20)
 mkdir -p /tmp/${rand}
 yaml_path="/tmp/${rand}/env.yml"
-cp conda/env.yml.template ${yaml_path}
+cp multi-table-benchmark/conda/env.yml.template ${yaml_path}
 sed -i "s|__NAME__|${name}|g" ${yaml_path}
 sed -i "s|__PYTHON_VERSION__|${python_version}|g" ${yaml_path}
 sed -i "s|__TORCH_VERSION__|${torchversion}|g" ${yaml_path}

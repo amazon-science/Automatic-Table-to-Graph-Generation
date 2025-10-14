@@ -1,0 +1,5 @@
+streamlit==1.38.0
+pandas==2.2.3
+python-dotenv==1.0.1
+boto3==1.35.27
+SQLAlchemy==2.0.36

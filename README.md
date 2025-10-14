@@ -42,6 +42,9 @@ pip install codetiming humanfriendly sentence_transformers==3.3.0 transformers==
 ```
 
 ```bash
+# for the mysqlclient linux requirement
+sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config
+
 # Install 4dbinfer-related libraries
 cd multi-table-benchmark
 bash conda/create_conda_env.sh
