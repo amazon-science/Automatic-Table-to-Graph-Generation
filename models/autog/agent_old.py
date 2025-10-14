@@ -2,7 +2,8 @@ import traceback
 
 from models.llm.bedrock import get_bedrock_llm, bedrock_llm_query
 import os
-from models.autog.action import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
+# from models.autog.action import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
+from models.autog.action_new import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
 from prompts.mautog import get_multi_round_action_selection_prompt, get_single_round_multi_step_prompt
 from utils.data.rdb import load_dbb_dataset_from_cfg_path_no_name
 from models.llm.gconstruct import extract_between_tags, analyze_dataframes
@@ -300,8 +301,6 @@ class AutoG_Agent():
                                      debug=False, debug_dataset=self.dataset, debug_task=self.task_name,
                                      debug_round=epoch-1)
 
-        print(f'Response: {response} ...')
-
         selection = extract_between_tags(response, "selection")[0].strip()
 
         # print(f'Selection: {selection} ...')
@@ -466,7 +465,7 @@ class AutoG_Agent():
             Augment the schema
         """
         for i in range(self.threshold):
-            typer.echo(f"Round: {i}")
+            typer.echo(f"Round: {i} ...")
             ## generate the folder for round i
             self.dataset_cache_path = os.path.join(self.path_to_file, f"round_{i}")
             os.makedirs(self.dataset_cache_path, exist_ok=True)
@@ -486,9 +485,6 @@ class AutoG_Agent():
                 # target_data_path = os.path.join(self.dataset_cache_path)
                 target_task_path = os.path.join(self.dataset_cache_path, self.task_name)
                 # target_task_path = os.path.join(self.dataset_cache_path)
-                
-                print(f'Initial data path: {initial_data_path} to target data path: {target_data_path}')
-                print(f'Initial task path: {initial_task_path} to target task path: {target_task_path}')
 
                 copy_directory(initial_data_path, target_data_path)
                 copy_directory(initial_task_path, target_task_path)

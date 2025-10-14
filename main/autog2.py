@@ -210,12 +210,11 @@ def main(
     with open(info_path, 'r') as f:
         analysis_rst = f.read()
     identify_inputs = identify_prompt(analysis_rst)
-    # print(identify_inputs)
 
     bedrock_llm = get_bedrock_llm(llm_config["model_name"], context_size=llm_config["context_size"])
     response = bedrock_llm.complete(identify_inputs, max_tokens=OUTPUT_SIZE).text
 
-    print(f'== {response}')
+    # print(f'== {response}')
 
     # handle response by extracting on the JSON contents for Sonnet 4
     start = response.find('{')
@@ -260,7 +259,7 @@ def main(
         llm_model_name=llm_config["model_name"],
         context_size=llm_config["context_size"],
         path_to_file=autog_path,
-        llm_sleep=30,
+        llm_sleep=1,
         use_cache=False,
         threshold=20,
         output_size=llm_config["output_size"],

@@ -167,7 +167,7 @@ def analyze_dataframes(dataframes, k=5, dbb = None):
             for col in table.columns:
                 column_dict[f'Table {table.name}'].append(col.name)
     for df_name, df in dataframe_dict.items():
-        print(f"Analyzing DataFrame: {df_name}")
+        # print(f"Analyzing DataFrame: {df_name}")
         output_string += f"Analysis for {df_name}:\n"
         objective = None 
         if isinstance(df, pd.DataFrame):
@@ -181,7 +181,7 @@ def analyze_dataframes(dataframes, k=5, dbb = None):
             if dbb is not None:
                 if col_name not in column_dict[df_name]:
                     continue
-            print(f"Analyzing column: {col_name}")
+            # print(f"Analyzing column: {col_name}")
             output_string += f"  Column: {col_name}\n"
             
             if col_name == 'name_tokens':
