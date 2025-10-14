@@ -63,11 +63,18 @@ def synthesize_column(col, dtype, n_rows):
             return np.zeros(n_rows)
         mu, sigma = np.mean(data), np.std(data)
         synth = np.random.normal(mu, sigma if sigma > 0 else 1, size=n_rows)
-        return np.clip(synth, data.min(), data.max()).round(4)
+        values = np.clip(synth, data.min(), data.max()).round(4)
+        return pd.Series(values, dtype="float32")
+
+    elif dtype == "int":
+        min_val, max_val = int(col.min()), int(col.max())
+        values = np.random.randint(min_val, max_val + 1, n_rows, dtype=np.int64)
+        return pd.Series(values, dtype="int64")
 
     elif dtype == "category":
         freqs = col.value_counts(normalize=True)
-        return np.random.choice(freqs.index, size=n_rows, p=freqs.values)
+        values = np.random.choice(freqs.index, size=n_rows, p=freqs.values)
+        return pd.Series(values, dtype="category")
 
     elif dtype == "datetime":
         col = pd.to_datetime(col, errors="coerce").dropna()
@@ -76,10 +83,15 @@ def synthesize_column(col, dtype, n_rows):
         min_date, max_date = col.min(), col.max()
         delta = (max_date - min_date).days
         random_days = np.random.randint(0, delta + 1, size=n_rows)
-        return [min_date + pd.Timedelta(days=int(d)) for d in random_days]
+        values = [min_date + pd.Timedelta(days=int(d)) for d in random_days]
+        return pd.Series(values, dtype="datetime64[ns]")
 
     else:
-        return np.random.choice(col.dropna(), size=n_rows)
+        uniq = col.astype(str).unique()
+        if len(uniq) == 0:
+            uniq = ["value0"]
+        values = np.random.choice(uniq, size=n_rows, replace=True)
+        return pd.Series(values, dtype="object")
 
 def create_missing_table(col_name, fk_values, n_rows=100):
     """ Create a synthetic table for missing foreign-key references. """
@@ -103,7 +115,8 @@ def synthesize_table(df, table_meta, fk_maps, n_rows=None, schema_table_names=No
         dtype = col_meta["dtype"]
 
         if dtype == "primary_key":
-            new_ids = [str(uuid.uuid4()) for _ in range(n_rows)]
+            # new_ids = [str(uuid.uuid4()) for _ in range(n_rows)]
+            new_ids = np.random.randint(int(df[col].values.min()), int(df[col].values.max()), n_rows, dtype=np.int64)
             synthetic_df[col] = new_ids
             # Map original IDs (cycled if needed)
             orig_ids = np.resize(df[col].values, n_rows)
@@ -115,7 +128,8 @@ def synthesize_table(df, table_meta, fk_maps, n_rows=None, schema_table_names=No
 
             if (ref_table not in schema_table_names) or (ref_key not in fk_maps):
                 # If n mapping available, to synthesize fresh IDs
-                synthetic_df[col] = [str(uuid.uuid4()) for _ in range(n_rows)]
+                # synthetic_df[col] = [str(uuid.uuid4()) for _ in range(n_rows)]
+                synthetic_df[col] = np.random.randint(int(df[col].values.min()), int(df[col].values.max()), n_rows, dtype=np.int64)
             else:
                 ref_map = fk_maps[ref_key]
                 orig_vals = np.resize(df[col].values, n_rows)
