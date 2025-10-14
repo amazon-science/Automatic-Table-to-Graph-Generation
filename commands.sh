@@ -85,4 +85,21 @@ export AWS_ACCESS_KEY_ID=<YOUR_AWS_ACCESS_KEY_ID>
 export AWS_SECRET_ACCESS_KEY=<YOUR_AWS_SECRET_ACCESS_KEY>
 export AWS_SESSION_TOKEN=<YOUR_AWS_SESSION_TOKEN>
 
-python -m main.autog2 /data/datasets/mag/old sonnet4 autog-s mag:venue
+python -m main.autog2 ./data/datasets/mag/old sonnet4 autog-s mag:venue
+
+# For using the synthetic data
+# 1. run the scripts under the ./synthetic_data like the following command and 
+#    record the location of the generated synthetic data, e.g., ./data/datasets/mag/synthetic
+python example_data_mag.py
+
+# 2. run a similar command as the above, but change location of data, like
+python -m main.autog2 ./data/datasets/mag/synthetic sonnet4 autog-s mag:venue
+
+# For full customize task, offline pipeline relyes on the ./prompt/task.py file.
+# So first, add a new item into the task_description dictionary and remember the task key,
+# For example, there is a duplicated custom task from avs dataset,like
+#     "custom": {
+#        "repeater": "This task is to predict whether a user will repeat a purchase given the user's purchase history and user-item structural information"
+#     },
+# And then run the command like
+python -m main.autog2 ./data/datasets/avs/synthetic sonnet4 autog-s custom:repeater
