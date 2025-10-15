@@ -129,9 +129,6 @@ def single_round_prompt(examples: List[str], input_data_schema: Dict, downstream
     return AUGMENTATION_PROMPT
 
 
-
-
-
 EXAMPLE_INPUT_1="""
 An example will be as follows:
     <input>

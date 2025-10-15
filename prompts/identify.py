@@ -4,23 +4,10 @@
   available is a more natural setting.
 """
 
-def identify_prompt():
-    identify = """
-
-Now you will be given a list of tables and columns, each one with the following format:
-Analysis for Table <name of the table>:
-  Column: <name of the column 1>
-    Max: <max value of the column>
-    Min: <min value of the column>
-    Mode: <mode value of the column>
-    Sampled Values: <list of sampled values>, for example, ['value1', 'value2', 'value3']
-  Column: <name of the column 2>
-    Max: <max value of the column>
-    Min: <min value of the column>
-    Mode: <mode value of the column>
-    Sampled Values: <list of sampled values>, for example, ['value1', 'value2', 'value3']
-...
-
+def identify_prompt(analysis=None)->str:
+    identify_start = """ Now you will be given a list of tables and columns, each one with the following format:
+    """
+    identify_end = """
 You should identify the data type of each column. The data types you can choose from are:
 ['float', 'category', 'datetime', 'text', 'multi_category']
 float: The column is probably a float-type embedding tensor. There should be (nearly) no redundant values.
@@ -43,8 +30,10 @@ Output the results with the following format:
 In description, if you see two columns are very similar and may represent the same thing, you should mention it.
 
     """
-
-    return identify
+    assert analysis is not None, ('You need to provide the table analysis results for the identity '
+                                  f'prompt, but got {analysis}.')
+    
+    return identify_start + analysis + identify_end
 
 
 def reflect():

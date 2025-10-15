@@ -1,5 +1,6 @@
 import os
-from models.autog.action import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
+# from models.autog.action import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
+from models.autog.action_new import get_autog_actions, pack_function_introduction_prompt, turn_dbb_into_a_lookup_table
 from prompts.mautog import get_multi_round_action_selection_prompt, get_single_round_multi_step_prompt
 
 from models.llm.gconstruct import extract_between_tags, analyze_dataframes, dummy_llm_interaction
@@ -84,9 +85,18 @@ def load_dbb_dataset_from_cfg_path_no_name(cfg_path: str):
 class AutoG_Agent():
     def __init__(self, initial_schema, mode="autog-s", oracle = None,  
                  path_to_file = "",
-                use_cache = False, 
-                 threshold = 10, llm_sleep = 0.5, task_description = 'autog', dataset = 'mag', 
-                 task_name = 'venue', schema_info = "", lm_path = "", jtd_k = 20, recalculate = True, data_type_file = "", update_task = False) -> None:
+                 use_cache = False, 
+                 threshold = 10,
+                 llm_sleep = 0.5, 
+                 task_description = 'autog',
+                 dataset = 'mag',
+                 task_name = 'venue',
+                 schema_info = "",
+                 lm_path = "",
+                 jtd_k = 20,
+                 recalculate = True,
+                 data_type_file = "",
+                 update_task = False) -> None:
         """
             Main agent program for AutoG
             Args:
@@ -467,7 +477,7 @@ class AutoG_Agent():
         for i in range(self.threshold):
             typer.echo(f"Round: {i}")
             ## generate the folder for round i
-            
+
             res, need_continue = self.decide_next_step(dbb, i)
             self.round += 1
             if need_continue == False:

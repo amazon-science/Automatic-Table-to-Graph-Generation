@@ -302,7 +302,7 @@ tasks:
         cites = pd.read_parquet(osp.join(expert_path, "data", "cites.pqt"))
         affiliated_with.to_parquet(osp.join(old_path, "data", "affiliated_with.pqt"))
         cites.to_parquet(osp.join(old_path, "data", "cites.pqt"))
-        information = analyze_dataframes({'Table paper': dict_file, 'Table Cites': cites, 'Table HasTopic': has_topic, 'Table AffiliatedWith': affiliated_with, 'Table Writes': writes}, k = 5)
+        information = analyze_dataframes({'Table Paper': dict_file, 'Table Cites': cites, 'Table HasTopic': has_topic, 'Table AffiliatedWith': affiliated_with, 'Table Writes': writes}, k = 5)
         with open(f"{dataset_path}/mag/information.txt", "w") as f:
             f.write(information)
     elif dataset == "IEEE-CIS":
@@ -819,7 +819,7 @@ tasks:
         with open(f"{dataset_path}/movielens/information.txt", "w") as f:
             f.write(information) 
             
-    elif dataset == "AVS":
+    elif dataset == "AVS" or dataset == "avs":
         ## generate the expert schema, what we do is a trick offered in kaggle to 
         ## remove redundant data
         transaction_df = pd.read_parquet(f"{dataset_path}/avs/raw/avs/data/transactions.pqt")
@@ -1187,6 +1187,7 @@ tasks:
         new_purchase = new_purchase.rename(columns = {'userId': 'purchaser', 'sessionId': 'purchase_session'})
         new_purchase.to_parquet(f"{dataset_path}/diginetica/old/data/purchases.pqt")
         new_product = pd.read_parquet(f"{dataset_path}/diginetica/expert/data/products.pqt")
+        old_product_name_token = pd.read_parquet(f"{dataset_path}/diginetica/expert/data/product_name_tokens.pqt")
         new_product = duckdb.query("""
             SELECT np.itemId,
                 np.categoryId,
