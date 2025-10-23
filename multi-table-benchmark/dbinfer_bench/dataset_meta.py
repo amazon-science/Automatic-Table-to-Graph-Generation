@@ -163,8 +163,13 @@ class DBBRDBDatasetMeta(pydantic.BaseModel):
     dataset_name : str
     # Table schemas.
     tables : List[DBBTableSchema]
+
+
     # Task metadata.
-    tasks : List[DBBTaskMeta]
+    # TODO(Jian) check if need this.
+    # tasks : List[DBBTaskMeta]
+
+
     # how to construct graph 
     method: str = 'r2n'
 

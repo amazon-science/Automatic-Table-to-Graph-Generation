@@ -9,6 +9,7 @@ from prompts.task import get_task_description
 from prompts.identify import identify_prompt
 from utils.misc import seed_everything
 from utils.data.rdb import load_dbb_dataset_from_cfg_path_no_name
+from models.llm.gconstruct import analyze_dataframes
 
 
 CONTEXT_SIZE = 65536
@@ -84,40 +85,40 @@ def generate_training_metainfo(data, meta_dict, this_task):
     
     # Add task meta information
     overall_meta['tasks'] = []
-    for task in data.metadata.tasks:
-        if task.name != this_task:
-            continue
+    # for task in data.metadata.tasks:
+    #     if task.name != this_task:
+    #         continue
             
-        task_dict = {
-            'name': task.name,
-            'task_type': task.task_type,
-            'target_column': task.target_column,
-            'target_table': task.target_table,
-            'evaluation_metric': task.evaluation_metric,
-            'format': task.format,
-            'source': task.source,
-            'columns': []
-        }
+    #     task_dict = {
+    #         'name': task.name,
+    #         'task_type': task.task_type,
+    #         'target_column': task.target_column,
+    #         'target_table': task.target_table,
+    #         'evaluation_metric': task.evaluation_metric,
+    #         'format': task.format,
+    #         'source': task.source,
+    #         'columns': []
+    #     }
 
-        for column in task.columns:
-            # Skip if not in metadata and not special column
-            is_special = (
-                column.name == task.target_column or 
-                column.dtype == 'datetime'
-            )
-            if not is_special and column.name not in meta_dict[task.target_table]:
-                continue
+    #     for column in task.columns:
+    #         # Skip if not in metadata and not special column
+    #         is_special = (
+    #             column.name == task.target_column or 
+    #             column.dtype == 'datetime'
+    #         )
+    #         if not is_special and column.name not in meta_dict[task.target_table]:
+    #             continue
 
-            column_info = {
-                'name': column.name,
-                'dtype': (
-                    column.dtype if is_special 
-                    else meta_dict[task.target_table][column.name][0]
-                )
-            }
-            task_dict['columns'].append(column_info)
+    #         column_info = {
+    #             'name': column.name,
+    #             'dtype': (
+    #                 column.dtype if is_special 
+    #                 else meta_dict[task.target_table][column.name][0]
+    #             )
+    #         }
+    #         task_dict['columns'].append(column_info)
 
-        overall_meta['tasks'].append(task_dict)
+    #     overall_meta['tasks'].append(task_dict)
     
     return overall_meta
 
@@ -135,7 +136,6 @@ def capitalize_first_alpha_concise(text):
         if char.isalpha():
             return text[:i] + text[i:].replace(char, char.upper(), 1)
     return text
-
 
 def get_llm_config(llm_name):
     """Get LLM configuration based on model name."""
@@ -188,7 +188,6 @@ def get_llm_config(llm_name):
     }
     return configs.get(llm_name, configs["sonnet3"])
 
-
 def main(
     dataset_path: str = typer.Argument(..., help="The path to the dataset"),
     llm_name: str = typer.Argument("sonnet3", help="The name of the LLM model to use."),
@@ -205,16 +204,20 @@ def main(
     llm_config = get_llm_config(llm_name)
     print(f'Using the following LLM configurations:{llm_config}')
     
-    #TODO: automatically create the information contents
-    info_path = os.path.join(dataset_path, 'information.txt')
-    with open(info_path, 'r') as f:
-        analysis_rst = f.read()
+    # automatically create the information contents by calling analyze_dataframes()
+    multi_tabular_data = load_dbb_dataset_from_cfg_path_no_name(dataset_path)
+    dataset, task = task_name.split(':')[0], task_name.split(':')[1]
+    task_description = get_task_description(dataset, task)
+
+    table_meta_dict = {
+            f'Table {table_name}': table for table_name, table in multi_tabular_data.tables.items()
+        }
+    print(f'Analyze given tables ...')
+    analysis_rst = analyze_dataframes(table_meta_dict)
     identify_inputs = identify_prompt(analysis_rst)
 
     bedrock_llm = get_bedrock_llm(llm_config["model_name"], context_size=llm_config["context_size"])
     response = bedrock_llm.complete(identify_inputs, max_tokens=OUTPUT_SIZE).text
-
-    # print(f'== {response}')
 
     # handle response by extracting on the JSON contents for Sonnet 4
     start = response.find('{')
@@ -229,16 +232,11 @@ def main(
     }
 
     # Load dataset information
-    information_path = os.path.join(dataset_path, 'information.txt')
-    with open(information_path, 'r') as file:
-        information = file.read()
+    # information_path = os.path.join(dataset_path, 'information.txt')
+    # with open(information_path, 'r') as file:
+    #     information = file.read()
 
     # Load and prepare data
-    old_data_config_path = os.path.join(dataset_path)
-    multi_tabular_data = load_dbb_dataset_from_cfg_path_no_name(old_data_config_path)
-    dataset, task = task_name.split(':')[0], task_name.split(':')[1]
-    task_description = get_task_description(dataset, task)
-    
     print(f'The task for {dataset} data: {task_description}')
 
     schema_input = generate_training_metainfo(
@@ -266,8 +264,9 @@ def main(
         task_description=task_description,
         dataset=dataset,
         task_name=task,
-        schema_info=information,
-        lm_path=lm_path
+        schema_info=analysis_rst,
+        lm_path=lm_path,
+        recalculate=False
     )
     
     agent.augment()

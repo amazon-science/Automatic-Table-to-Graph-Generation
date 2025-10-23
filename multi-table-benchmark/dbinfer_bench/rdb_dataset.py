@@ -80,17 +80,17 @@ class DBBRDBDataset:
             self._tables[table_schema.name] = loader(table_path)
 
         # Load tasks.
-        self._tasks = []
-        for task_meta in self.metadata.tasks:
-            loader = get_table_data_loader(task_meta.format)
-            def _load_split(split):
-                table_path = self.path / task_meta.source.format(split=split)
-                return loader(table_path)
-            train_set = _load_split('train')
-            validation_set = _load_split('validation')
-            test_set = _load_split('test')
-            self._tasks.append(DBBRDBTask(
-                task_meta, train_set, validation_set, test_set))
+        # self._tasks = []
+        # for task_meta in self.metadata.tasks:
+        #     loader = get_table_data_loader(task_meta.format)
+        #     def _load_split(split):
+        #         table_path = self.path / task_meta.source.format(split=split)
+        #         return loader(table_path)
+        #     train_set = _load_split('train')
+        #     validation_set = _load_split('validation')
+        #     test_set = _load_split('test')
+        #     self._tasks.append(DBBRDBTask(
+        #         task_meta, train_set, validation_set, test_set))
 
     @property
     def dataset_name(self) -> str:
@@ -100,19 +100,19 @@ class DBBRDBDataset:
     def metadata(self) -> DBBRDBDatasetMeta:
         return self._metadata
 
-    @property
-    def tasks(self) -> List[DBBRDBTask]:
-        return self._tasks
+    # @property
+    # def tasks(self) -> List[DBBRDBTask]:
+    #     return self._tasks
 
     @property
     def tables(self) -> Dict[str, Dict[str, np.ndarray]]:
         return self._tables
 
-    def get_task(self, name : str) -> DBBRDBTask:
-        for task in self.tasks:
-            if task.metadata.name == name:
-                return task
-        raise ValueError(f"Unknown task {name}.")
+    # def get_task(self, name : str) -> DBBRDBTask:
+    #     for task in self.tasks:
+    #         if task.metadata.name == name:
+    #             return task
+    #     raise ValueError(f"Unknown task {name}.")
 
     @property
     def sqlalchemy_metadata(self) -> sqlalchemy.MetaData:
@@ -159,31 +159,31 @@ class DBBRDBDataset:
     def save(self, path : Path):
         ds_ctor = DBBRDBDatasetCreator(self.metadata.dataset_name)
         ds_ctor.replace_tables_from(self)
-        for task in self.tasks:
-            task_ctor = DBBRDBTaskCreator(task.metadata.name)
-            task_ctor.copy_fields_from(task.metadata)
-            task.metadata.column_dict
-            for col_name in task.train_set:
-                col_meta = dict(task.metadata.column_dict[col_name])
-                col_meta.pop('name')
-                task_ctor.add_task_data(
-                    col_name,
-                    task.train_set[col_name],
-                    task.validation_set[col_name],
-                    task.test_set[col_name],
-                    **col_meta)
-            if task.metadata.task_type == DBBTaskType.retrieval:
-                for col_name in [
-                    task.metadata.key_prediction_label_column,
-                    task.metadata.key_prediction_query_idx_column,
-                ]:
-                    task_ctor.add_task_data(
-                        col_name,
-                        None,
-                        task.validation_set[col_name],
-                        task.test_set[col_name],
-                        dtype=None)
-            ds_ctor.add_task(task_ctor)
+        # for task in self.tasks:
+        #     task_ctor = DBBRDBTaskCreator(task.metadata.name)
+        #     task_ctor.copy_fields_from(task.metadata)
+        #     task.metadata.column_dict
+        #     for col_name in task.train_set:
+        #         col_meta = dict(task.metadata.column_dict[col_name])
+        #         col_meta.pop('name')
+        #         task_ctor.add_task_data(
+        #             col_name,
+        #             task.train_set[col_name],
+        #             task.validation_set[col_name],
+        #             task.test_set[col_name],
+        #             **col_meta)
+        #     if task.metadata.task_type == DBBTaskType.retrieval:
+        #         for col_name in [
+        #             task.metadata.key_prediction_label_column,
+        #             task.metadata.key_prediction_query_idx_column,
+        #         ]:
+        #             task_ctor.add_task_data(
+        #                 col_name,
+        #                 None,
+        #                 task.validation_set[col_name],
+        #                 task.test_set[col_name],
+        #                 dtype=None)
+        #     ds_ctor.add_task(task_ctor)
         ds_ctor.done(path)
 
 def load_rdb_data(name_or_path : str) -> DBBRDBDataset:

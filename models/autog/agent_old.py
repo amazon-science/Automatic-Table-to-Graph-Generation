@@ -121,7 +121,7 @@ class AutoG_Agent():
         self.icl_k = icl_k
         self.mode = mode
         self.oracle = oracle
-        self.icl_strategy = "random"
+        # self.icl_strategy = "random"
         self.path_to_file = path_to_file
         self.use_cache = use_cache
         self.dataset = dataset  
@@ -163,23 +163,23 @@ class AutoG_Agent():
         if self.jtd_k == 0:
             return ""
         # import ipdb; ipdb.set_trace()
-        if os.path.exists(os.path.join(self.path_to_file, 'round_0', 'deepjoin.pkl')) and not self.recalculate:
+        if os.path.exists(os.path.join(self.path_to_file, 'deepjoin.pkl')) and not self.recalculate:
             typer.echo("Load the deepjoin from cache")
-            result=joblib.load(os.path.join(self.path_to_file, 'round_0', 'deepjoin.pkl'))
+            result=joblib.load(os.path.join(self.path_to_file, 'deepjoin.pkl'))
         elif self.recalculate:
             typer.echo("First try to see the deepjoin state")
-            if os.path.exists(os.path.join(self.path_to_file, 'round_0', f'deepjoin{self.round}.pkl')):
-                result = joblib.load(os.path.join(self.path_to_file, 'round_0', f'deepjoin{self.round}.pkl'))
+            if os.path.exists(os.path.join(self.path_to_file, f'deepjoin{self.round}.pkl')):
+                result = joblib.load(os.path.join(self.path_to_file, f'deepjoin{self.round}.pkl'))
             else:
                 typer.echo("Calculate the deepjoin")
                 model = load_pretrain_jtd_lm(self.lm_path)
                 result = join_discovery(rdb_dataset, model)
-                joblib.dump(result, os.path.join(self.path_to_file, 'round_0', f'deepjoin{self.round}.pkl'))
+                joblib.dump(result, os.path.join(self.path_to_file, f'deepjoin{self.round}.pkl'))
         else:
             typer.echo("Calculate the deepjoin")
             model = load_pretrain_jtd_lm(self.lm_path)
             result = join_discovery(rdb_dataset, model)
-            joblib.dump(result, os.path.join(self.path_to_file, 'round_0', 'deepjoin.pkl'))
+            joblib.dump(result, os.path.join(self.path_to_file, 'deepjoin.pkl'))
         ## turn numerical result into prompts
         result_prompt = format_top_k_similarities(rdb_dataset, result, self.jtd_k)
         return result_prompt
@@ -229,8 +229,9 @@ class AutoG_Agent():
         )
 
         ## save the current prompt for debug 
-        with open(os.path.join(self.dataset_cache_path, 'prompt.txt'), 'w') as f:
+        with open(os.path.join(self.path_to_file, 'prompt.txt'), 'w') as f:
             f.write(full_prompts)
+
         return full_prompts
     
     def parse_args(self, parameters):
@@ -255,46 +256,45 @@ class AutoG_Agent():
                     time_column = column.name
             table.time_column = time_column
 
-        task = dbb.metadata.tasks[0]
-        columns = task.columns
-        target_table = task.target_table
-        ## find the table 
-        find_table = [table for table in dbb.metadata.tables if table.name == target_table][0]
-        ## mapping between column name and type 
-        column_type_mapping = {column.name: column.dtype for column in find_table.columns}
-        link_to_mapping = {column.name: column.link_to for column in find_table.columns if hasattr(column, 'link_to')}
-        find_table_column_name = set([column.name for column in find_table.columns])
-        ## update the task
-        pop_name = []
-        time_column = None
-        for idx, _ in enumerate(columns):
-            # if columns[idx].d
-            if columns[idx].name == task.target_column or columns[idx].dtype == 'datetime':
-                continue
-            if columns[idx].name not in find_table_column_name:
-                pop_name.append(columns[idx].name)
-                continue
-            if columns[idx].name in column_type_mapping:
-                columns[idx].dtype = column_type_mapping[columns[idx].name]
-            if columns[idx].dtype == 'foreign_key':
-                columns[idx].link_to = link_to_mapping[columns[idx].name]
-        ## remove the columns with name in pop_name
-        for name in pop_name:
-            columns = [col for col in columns if col.name != name]
-            dbb.tasks[0].train_set.pop(name)
-            dbb.tasks[0].validation_set.pop(name)
-            dbb.tasks[0].test_set.pop(name)
-        task.columns = columns
-        dbb.metadata.tasks[0] = task
+        # task = dbb.metadata.tasks[0]
+        # columns = task.columns
+        # target_table = task.target_table
+        # ## find the table 
+        # find_table = [table for table in dbb.metadata.tables if table.name == target_table][0]
+        # ## mapping between column name and type 
+        # column_type_mapping = {column.name: column.dtype for column in find_table.columns}
+        # link_to_mapping = {column.name: column.link_to for column in find_table.columns if hasattr(column, 'link_to')}
+        # find_table_column_name = set([column.name for column in find_table.columns])
+        # ## update the task
+        # pop_name = []
+        # time_column = None
+        # for idx, _ in enumerate(columns):
+        #     # if columns[idx].d
+        #     if columns[idx].name == task.target_column or columns[idx].dtype == 'datetime':
+        #         continue
+        #     if columns[idx].name not in find_table_column_name:
+        #         pop_name.append(columns[idx].name)
+        #         continue
+        #     if columns[idx].name in column_type_mapping:
+        #         columns[idx].dtype = column_type_mapping[columns[idx].name]
+        #     if columns[idx].dtype == 'foreign_key':
+        #         columns[idx].link_to = link_to_mapping[columns[idx].name]
+        # ## remove the columns with name in pop_name
+        # for name in pop_name:
+        #     columns = [col for col in columns if col.name != name]
+        #     dbb.tasks[0].train_set.pop(name)
+        #     dbb.tasks[0].validation_set.pop(name)
+        #     dbb.tasks[0].test_set.pop(name)
+        # task.columns = columns
+        # dbb.metadata.tasks[0] = task
         return dbb
 
     def decide_next_step(self, dbb, epoch):
         """
             Input the current state, let LLMs determine the next action
         """
-        # import ipdb; ipdb.set_trace()
         selection = "nothing selected yet"
-        # import ipdb; ipdb.set_trace()
+
         this_round_dbb = dbb
         this_round_prompt = self.pack_prompts(this_round_dbb)
         response = bedrock_llm_query(self.llm, this_round_prompt, max_tokens = self.output_size, cache=self.use_cache,
@@ -303,18 +303,14 @@ class AutoG_Agent():
 
         selection = extract_between_tags(response, "selection")[0].strip()
 
-        # print(f'Selection: {selection} ...')
-
         if selection == "None":
             return this_round_dbb, False
-        # method = extract_between_tags(response, "construction")[0].strip()
+
         ## update here, no need to let llm tell method, just try r2n and r2ne both
         method = 'r2n'
-        
 
         ## use a for loop to run these commands
         selection = json.loads(selection)
-        # import ipdb; ipdb.set_trace()
         for move in selection:
             typer.echo(f"Move: {move}")
             last_valid_dbb = deepcopy(this_round_dbb)
@@ -325,7 +321,7 @@ class AutoG_Agent():
             parameters['dbb'] = this_round_dbb
             try:
                 this_round_dbb = action_code(**parameters)
-                ## remove non-serializable objects
+                # remove non-serializable objects
                 move['parameters'] = {k: v for k, v in move['parameters'].items() if k != 'dbb'}
                 self.history.append(json.dumps(move))
                 this_round_dbb.method = method
@@ -333,11 +329,11 @@ class AutoG_Agent():
                 if self.mode == 'autog-a':
                     this_round_dbb = self.update_task(this_round_dbb)
                     self.backup(this_round_dbb)
-                    ## if autog-a, update after every action, otherwise update once
+                    # if autog-a, update after every action, otherwise update once
                     
                 this_round_dbb = self.update_task(this_round_dbb)
             except Exception as e:
-                ## recover from error
+                # recover from error
                 traceback.print_exc()
                 typer.echo(f"Error: {e}")
                 self.history.append("Error: " + str(e) + "Problem action: " + str(move))   
@@ -371,31 +367,32 @@ class AutoG_Agent():
                     table.time_column = 'publish_time'
             dbb.metadata.tasks[0].time_column = 'timestamp'
         if self.dataset == 'avs':
+            pass
             # dbb.tasks[0].train_set.pop('history_chain')
             # dbb.tasks[0].validation_set.pop('history_chain')
             # dbb.tasks[0].test_set.pop('history_chain')
-            dbb.tasks[0].metadata.columns.append(
-                DBBColumnSchema(
-                    name='timestamp',
-                    dtype='datetime',
-                )
-            )
-            dbb.tasks[0].time_column = 'timestamp'
-            remove_table = -1
-            remove_col = -1
-            for i, table in enumerate(dbb.metadata.tables):
-                if table.name == 'History':
-                    table.time_column = 'offerdate'
-                if table.name == 'Transaction':
-                    table.time_column = 'date'
-                if table.name == 'History':
-                    for j, col in enumerate(table.columns):
-                        if col.name == 'repeater':
-                            remove_table = i
-                            remove_col = j
-            if remove_table != -1 and remove_col != -1:
-                dbb.metadata.tables[remove_table].columns.pop(remove_col)
-            dbb.metadata.tasks[0].time_column = 'timestamp'
+            # dbb.tasks[0].metadata.columns.append(
+            #     DBBColumnSchema(
+            #         name='timestamp',
+            #         dtype='datetime',
+            #     )
+            # )
+            # dbb.tasks[0].time_column = 'timestamp'
+            # remove_table = -1
+            # remove_col = -1
+            # for i, table in enumerate(dbb.metadata.tables):
+            #     if table.name == 'History':
+            #         table.time_column = 'offerdate'
+            #     if table.name == 'Transaction':
+            #         table.time_column = 'date'
+            #     if table.name == 'History':
+            #         for j, col in enumerate(table.columns):
+            #             if col.name == 'repeater':
+            #                 remove_table = i
+            #                 remove_col = j
+            # if remove_table != -1 and remove_col != -1:
+            #     dbb.metadata.tables[remove_table].columns.pop(remove_col)
+            # dbb.metadata.tasks[0].time_column = 'timestamp'
             ## for history table, need to pop the repeater column, otherwise it will be a leakage; why for mag we don't need to remove? didn't figure out yet
 
         if self.dataset == 'diginetica':
@@ -462,47 +459,30 @@ class AutoG_Agent():
 
     def augment(self):
         """
-            Augment the schema
+            Augment the schema in multiple rounds.
         """
+        # initial state, move the data from source path to autog to avoid change
+        # the original folder structure
+        os.system(f"mkdir -p {os.path.join(self.path_to_file, 'data')}")
+        # os.system(f"mkdir -p {os.path.join(self.path_to_file, self.task_name)}")
+        with open(os.path.join(self.path_to_file, 'metadata.yaml'), 'w') as f:
+            yaml.dump(self.state, f)
+
+        parent_dir = os.path.dirname(self.path_to_file)
+        initial_data_path = os.path.join(parent_dir, 'data')
+        target_data_path = os.path.join(self.path_to_file, 'data')
+        copy_directory(initial_data_path, target_data_path)
+
+        dbb = load_dbb_dataset_from_cfg_path_no_name(self.path_to_file)
+
         for i in range(self.threshold):
             typer.echo(f"Round: {i} ...")
-            ## generate the folder for round i
-            self.dataset_cache_path = os.path.join(self.path_to_file, f"round_{i}")
-            os.makedirs(self.dataset_cache_path, exist_ok=True)
-            os.system(f"mkdir -p {self.dataset_cache_path}/data")
-            os.system(f"mkdir -p {self.dataset_cache_path}/{self.task_name}")
-            with open(os.path.join(self.dataset_cache_path, 'metadata.yaml'), 'w') as f:
-                yaml.dump(self.state, f)
-            if i == 0 and (not os.path.exists(os.path.join(self.dataset_cache_path, 'data')) or len(os.listdir(os.path.join(self.dataset_cache_path, 'data'))) == 0):
-                # initial state, move the data from old to autog
-                parent_dir = os.path.dirname(self.path_to_file)
-
-                initial_data_path = os.path.join(parent_dir, 'data')
-                initial_task_path = os.path.join(parent_dir, self.task_name)
-                
-                
-                target_data_path = os.path.join(self.dataset_cache_path, 'data')
-                # target_data_path = os.path.join(self.dataset_cache_path)
-                target_task_path = os.path.join(self.dataset_cache_path, self.task_name)
-                # target_task_path = os.path.join(self.dataset_cache_path)
-
-                copy_directory(initial_data_path, target_data_path)
-                copy_directory(initial_task_path, target_task_path)
-                self.round += 1
-                continue
-            elif i == 0:
-                self.round += 1
-                continue
-            if i == 1:
-                dbb = load_dbb_dataset_from_cfg_path_no_name(os.path.join(self.path_to_file, "round_0"))
-            res, need_continue = self.decide_next_step(dbb, i)
             self.round += 1
+            res, need_continue = self.decide_next_step(dbb, i)
             if need_continue == False:
-                # import ipdb; ipdb.set_trace()
                 res = self.manual_post_process(res)
                 if self.error < 3:
                     typer.echo("No more action can be taken")
-                    # import ipdb; ipdb.set_trace()
                     res.save(os.path.join(self.path_to_file, 'final'))
                     ## plot the schema
                     plot_rdb_dataset_schema(res, os.path.join(self.path_to_file, 'final', 'schema'))

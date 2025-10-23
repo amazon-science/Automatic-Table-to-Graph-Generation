@@ -33,7 +33,11 @@ task_description = {
         "churn": "The task is to predict the Target column of table Users, which means predicting whether the user will churn or not."
     },
     "custom": {
-        "repeater": "This task is to predict whether a user will repeat a purchase given the user's purchase history and user-item structural information"
+        "relation": "This task is to find the primary keys and foreign keys among the given tables."
+    },
+    "custom_mag": {
+        "venue": "This task is to predict the venue of a paper given the paper's title, abstract, authors, and publication year. \
+        You may use the meta relations between papers, authors, topics, and institutions to improve the performance"
     },
 }
 
