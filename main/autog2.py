@@ -380,6 +380,13 @@ def main(
     augment_history = "\n".join(agent.history)
     typer.echo(f"Augmentation history: \n{augment_history}")
 
+    # Save agent history to a file
+    historyfile = os.path.join(autog_path, "final", "agent_history.txt")
+    with open(historyfile, "w") as out:
+        out.write(augment_history)
+    typer.echo(
+        f"Wrote the agent history to {historyfile}.")
+
 
 if __name__ == '__main__':
     traceback.install(show_locals=True)
