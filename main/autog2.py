@@ -1,7 +1,9 @@
 import os
 import ast
 import typer
+import yaml
 import numpy as np
+import pandas as pd
 from rich import traceback
 from models.autog.agent_old import AutoG_Agent
 from models.llm.bedrock import get_bedrock_llm
@@ -14,6 +16,28 @@ from models.llm.gconstruct import analyze_dataframes
 
 CONTEXT_SIZE = 65536
 OUTPUT_SIZE = 65536
+
+dtype_mapping = {
+    # Category
+    'object': 'category',
+    'string': 'category', 
+    'category': 'category',
+    
+    # Float
+    'int8': 'float',
+    'int16': 'float',
+    'int32': 'float', 
+    'int64': 'float',
+    'float16': 'float',
+    'float32': 'float',
+    'float64': 'float',
+    'bool': 'float',
+    
+    # Datetime
+    'datetime64[ns]': 'datetime',
+    'timedelta64[ns]': 'datetime',
+    'period[D]': 'datetime'
+}
 
 def retrieve_input_schema(full_schema):
     input_schema = {
@@ -137,6 +161,61 @@ def capitalize_first_alpha_concise(text):
             return text[:i] + text[i:].replace(char, char.upper(), 1)
     return text
 
+def generate_metadata(table_path, dataset_name, data_format='csv'):
+    """ automatically explore the table data and generate metedata
+    """
+    meta_dict = {
+        'dataset_name': dataset_name,
+        'tables': []
+    }
+
+    files = os.listdir(table_path)
+    file_paths = [os.path.join(table_path, file) for file in files]
+    # filter out directories, leaving files only
+    file_paths = [file_path for file_path in file_paths if os.path.isfile(file_path)]
+
+    for file_path in file_paths:
+        # TODO(Jian) remove the file name constraints.
+        # Rename file name to capitalize first alphabetic letter for using LLMs
+        file_name = os.path.basename(file_path)
+        new_file_name = capitalize_first_alpha_concise(file_name)
+        # rename the table name
+        os.rename(os.path.join(table_path, file_name),
+                  os.path.join(table_path, new_file_name))
+        table_name = os.path.splitext(new_file_name)[0]
+
+        if data_format == 'csv':
+            table_df = pd.read_csv(os.path.join(table_path, new_file_name))
+        elif data_format == 'parquet':
+            table_df = pd.read_parquet(os.path.join(table_path, new_file_name))
+        else:
+            raise NotImplementedError
+        
+        table_meta_dict = {
+            'name': table_name,
+            'columns': [],
+            'format': 'parquet',
+            'source': 'data/' + table_name + '.pqt'
+        }
+
+        for column_name, column_dtype in table_df.dtypes.to_dict().items():
+            # Check if column is numerical
+            dtype = column_dtype
+            if column_dtype == 'object':
+                try:
+                    column_dtype.astype(int)
+                    dtype = 'int32'
+                except Exception as e:
+                    dtype = 'object'
+
+            table_meta_dict['columns'].append({
+                'name': column_name,
+                'dtype': dtype_mapping.get(dtype, 'category'),
+            })
+        meta_dict['tables'].append(table_meta_dict)
+
+    return meta_dict
+
 def get_llm_config(llm_name):
     """Get LLM configuration based on model name."""
     configs = {
@@ -194,7 +273,9 @@ def main(
     method: str = typer.Argument("autog-s", help="The method to run the model."),
     task_name: str = typer.Argument("mag:venue", help="Name of the task to fit the solution."),
     seed: int = typer.Option(0, help="The seed to use for the model."),
-    lm_path: str = typer.Option("deepjoin/output/deepjoin_webtable_training-all-mpnet-base-v2-2023-10-18_19-54-27")
+    lm_path: str = typer.Option("deepjoin/output/deepjoin_webtable_training-all-mpnet-base-v2-2023-10-18_19-54-27"),
+    dataset_name: str = typer.Argument("dataset", help="The name of dataset to be augemented."),
+    data_format: str = typer.Option("parquet", help="The format of tables. 'parquet' or 'csv'.")
 ):
     """Main function to run AutoG agent."""
     seed_everything(seed)
@@ -203,6 +284,19 @@ def main(
     # Get LLM configuration
     llm_config = get_llm_config(llm_name)
     print(f'Using the following LLM configurations:{llm_config}')
+    
+    # explore the original tables to generate the metadata.yaml for DBBDataset
+    # here we assume tables are stored in the ./data folder in the dataset_path
+    table_path = os.path.join(dataset_path, 'data')
+    assert os.path.exists(table_path), ("Expected the data tables are stored under the "
+            f"{table_path}, but the path does not exist! Please move your data tables "
+            "to this location.")
+    metadata_dict = generate_metadata(table_path, dataset_name, data_format)
+    # save metedata to metadata.yaml
+    metadata_path = os.path.join(dataset_path, 'metadata.yaml')
+    with open(metadata_path, 'w') as f:
+        yaml.dump(metadata_dict, f, default_flow_style=False)
+    print(f"Saved table metadata to {metadata_path}...")
     
     # automatically create the information contents by calling analyze_dataframes()
     multi_tabular_data = load_dbb_dataset_from_cfg_path_no_name(dataset_path)
@@ -214,6 +308,12 @@ def main(
         }
     print(f'Analyze given tables ...')
     analysis_rst = analyze_dataframes(table_meta_dict)
+
+    info_path = os.path.join(dataset_path, 'information.txt') 
+    with open(info_path, 'w') as f:
+        f.write(analysis_rst)
+    print(f"Saved analysis results to {info_path} ...")
+
     identify_inputs = identify_prompt(analysis_rst)
 
     bedrock_llm = get_bedrock_llm(llm_config["model_name"], context_size=llm_config["context_size"])
@@ -230,11 +330,6 @@ def main(
         capitalize_first_alpha_concise(key): value 
         for key, value in metainfo.items()
     }
-
-    # Load dataset information
-    # information_path = os.path.join(dataset_path, 'information.txt')
-    # with open(information_path, 'r') as file:
-    #     information = file.read()
 
     # Load and prepare data
     print(f'The task for {dataset} data: {task_description}')
