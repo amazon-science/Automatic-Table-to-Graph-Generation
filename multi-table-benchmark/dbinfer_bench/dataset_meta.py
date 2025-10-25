@@ -76,6 +76,7 @@ class DBBColumnSchema(pydantic.BaseModel):
 class DBBTableDataFormat(str, Enum):
     PARQUET = 'parquet'
     NUMPY = 'numpy'
+    CSV = 'csv'
 
 class DBBTableSchema(pydantic.BaseModel):
     """Table schema model."""
