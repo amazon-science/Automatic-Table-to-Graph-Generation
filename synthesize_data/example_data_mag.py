@@ -1,4 +1,5 @@
 import os.path
+import argparse
 import shutil
 import pandas as pd
 import numpy as np
@@ -196,22 +197,27 @@ def main_mag():
         "year_test": 200
     }
 
-    datapath = "./data/datasets/mag/old"
-    synthetic_dfs = synthesize_database(datapath, "metadata.yaml", size_config=size_config)
+    input_path = os.path.join(args.data_path, "old")
+    synthetic_dfs = synthesize_database(input_path, "metadata.yaml", size_config=size_config)
 
-    outpath = "./data/datasets/mag/synthetic"
+    outpath = os.path.join(args.data_path, "synthetic")
 
     for name, (df, dstfile) in synthetic_dfs.items():
         print(f"\nSynthetic Table: {name} (rows={len(df)})")
         print(df.head(3))
         save_synthesized_table(df, outpath, dstfile)
 
-    # copy metadata.yaml file
-    shutil.copyfile(os.path.join(datapath, "metadata.yaml"),
-                    os.path.join(outpath, "metadata.yaml"))
-    shutil.copyfile(os.path.join(datapath, "information.txt"),
-                    os.path.join(outpath, "information.txt"))
+    # copy metadata.yaml file (no need for the new version)
+    # shutil.copyfile(os.path.join(datapath, "metadata.yaml"),
+    #                 os.path.join(outpath, "metadata.yaml"))
+    # shutil.copyfile(os.path.join(datapath, "information.txt"),
+    #                 os.path.join(outpath, "information.txt"))
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-path", type=str, default='./data/datasets/mag/',
+                        help=("The path to the root of avs dataset, and where the "
+                              "synthetic avs data to be saved."))
+    args = parser.parse_args()
     main_mag()

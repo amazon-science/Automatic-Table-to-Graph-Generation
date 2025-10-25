@@ -188,6 +188,18 @@ def generate_metadata(table_path, dataset_name, data_format='csv'):
             table_df = pd.read_csv(os.path.join(table_path, new_file_name))
         elif data_format == 'parquet':
             table_df = pd.read_parquet(os.path.join(table_path, new_file_name))
+        elif data_format == "numpy":
+            arr = np.load(os.path.join(table_path, new_file_name), allow_pickle=True)
+            if isinstance(arr, np.lib.npyio.NpzFile):
+                tmp = {}
+                for k in arr.files:
+                    if k == 'feat':
+                        tmp[k] = list(arr['feat'])
+                    else:
+                        tmp[k] = arr[k]
+                table_df = pd.DataFrame(tmp)
+            else:
+                table_df = pd.DataFrame(arr)
         else:
             raise NotImplementedError
         
@@ -275,7 +287,7 @@ def main(
     seed: int = typer.Option(0, help="The seed to use for the model."),
     lm_path: str = typer.Option("deepjoin/output/deepjoin_webtable_training-all-mpnet-base-v2-2023-10-18_19-54-27"),
     dataset_name: str = typer.Argument("dataset", help="The name of dataset to be augemented."),
-    data_format: str = typer.Option("parquet", help="The format of tables. 'parquet' or 'csv'.")
+    data_format: str = typer.Option("parquet", help="The format of tables. 'parquet', 'csv', or 'numpy'.")
 ):
     """Main function to run AutoG agent."""
     seed_everything(seed)
@@ -367,6 +379,13 @@ def main(
     agent.augment()
     augment_history = "\n".join(agent.history)
     typer.echo(f"Augmentation history: \n{augment_history}")
+
+    # Save agent history to a file
+    historyfile = os.path.join(autog_path, "final", "agent_history.txt")
+    with open(historyfile, "w") as out:
+        out.write(augment_history)
+    typer.echo(
+        f"Wrote the agent history to {historyfile}.")
 
 
 if __name__ == '__main__':

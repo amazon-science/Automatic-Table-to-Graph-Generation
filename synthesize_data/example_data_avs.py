@@ -179,11 +179,11 @@ def main_avs(args):
         print(df.head(3))
         save_synthesized_table(df, output_path, dstfile)
 
-    # copy metadata.yaml file
-    shutil.copyfile(os.path.join(input_path, "metadata.yaml"),
-                    os.path.join(output_path, "metadata.yaml"))
-    shutil.copyfile(os.path.join(input_path, "information.txt"),
-                    os.path.join(output_path, "information.txt"))
+    # copy metadata.yaml file (no need for the new version)
+    # shutil.copyfile(os.path.join(input_path, "metadata.yaml"),
+    #                 os.path.join(output_path, "metadata.yaml"))
+    # shutil.copyfile(os.path.join(input_path, "information.txt"),
+    #                 os.path.join(output_path, "information.txt"))
 
 
 if __name__ == '__main__':
