@@ -206,7 +206,7 @@ def generate_metadata(table_path, dataset_name, data_format='csv'):
         table_meta_dict = {
             'name': table_name,
             'columns': [],
-            'format': 'parquet',
+            'format': data_format,
             'source': 'data/' + new_file_name
         }
 
