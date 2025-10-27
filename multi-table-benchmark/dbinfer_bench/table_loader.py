@@ -33,7 +33,12 @@ def numpy_loader(path : str) -> Dict[str, np.ndarray]:
     npz = np.load(path, allow_pickle=True)
     return { name : npz[name] for name in npz.files }
 
+def csv_loader(path : str) -> Dict[str, np.ndarray]:
+    df = pd.read_csv(str(path))
+    return { col : df[col].to_numpy() for col in df }
+
 LOADER_MAP = {
     DBBTableDataFormat.PARQUET : parquet_loader,
     DBBTableDataFormat.NUMPY : numpy_loader,
+    DBBTableDataFormat.CSV : csv_loader
 }
