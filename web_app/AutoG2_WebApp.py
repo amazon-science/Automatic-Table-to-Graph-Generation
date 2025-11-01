@@ -140,6 +140,28 @@ st.markdown("""
         margin: 0.5rem 0;
         font-weight: bold;
     }
+    
+    /* Enhanced Run AutoG Button Styling */
+    .stButton > button[key="run_autog2_main_btn"] {
+        font-size: 1.2rem !important;
+        font-weight: bold !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .stButton > button[key="run_autog2_main_btn"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
+    }
+    
+    /* Center the button container */
+    div[data-testid="column"]:has(button[key="run_autog2_main_btn"]) {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -150,6 +172,7 @@ class TaskConfig:
     method: str
     task_name: str
     custom_task: Optional[str] = None
+    use_custom_task: bool = False
     cache_strategy: str = "hybrid"
     seed: int = 0
     max_rounds: int = 20
@@ -201,7 +224,17 @@ def load_file_to_dataframe(uploaded_file) -> Optional[pd.DataFrame]:
     try:
         if uploaded_file.name.endswith('.csv'):
             return pd.read_csv(uploaded_file)
-        elif uploaded_file.name.endswith('.parquet'):
+        elif uploaded_file.name.endswith(('.tsv', '.tab')):
+            return pd.read_csv(uploaded_file, sep='\t')
+        elif uploaded_file.name.endswith(('.txt', '.dat')):
+            # Try to detect delimiter automatically for .txt and .dat files
+            try:
+                return pd.read_csv(uploaded_file, sep=None, engine='python')
+            except:
+                # Fallback to comma separator if auto-detection fails
+                uploaded_file.seek(0)  # Reset file pointer
+                return pd.read_csv(uploaded_file)
+        elif uploaded_file.name.endswith(('.parquet', '.pq', '.pqt')):
             return pd.read_parquet(uploaded_file)
         elif uploaded_file.name.endswith(('.npy', '.npz')):
             import io
@@ -339,6 +372,9 @@ export AWS_DEFAULT_REGION=us-west-2
                 disabled=task_running,
                 key=f"custom_task_{widget_counter}"
             )
+            # Ensure custom_task is None if empty string
+            if not custom_task or custom_task.strip() == "":
+                custom_task = None
         
         task_name = f"{dataset_type}:{task}"
         
@@ -382,6 +418,7 @@ export AWS_DEFAULT_REGION=us-west-2
             method=method,
             task_name=task_name,
             custom_task=custom_task if use_custom_task else None,
+            use_custom_task=use_custom_task,
             cache_strategy=cache_strategy,
             seed=seed,
             max_rounds=max_rounds
@@ -400,9 +437,9 @@ def render_file_upload():
     
     uploaded_files = st.file_uploader(
         "Upload your data files",
-        type=["csv", "parquet", "npy", "npz"],
+        type=["csv", "tsv", "txt", "dat", "tab", "parquet", "pq", "pqt", "npy", "npz"],
         accept_multiple_files=True,
-        help="Upload CSV, Parquet, or NumPy files containing your tabular data" if not uploader_disabled else "Disabled during processing",
+        help="Upload data files: CSV (.csv, .tsv, .txt, .dat, .tab), Parquet (.parquet, .pq, .pqt), or NumPy (.npy, .npz). Duplicate files will be automatically deduplicated." if not uploader_disabled else "Disabled during processing",
         disabled=uploader_disabled,
         key=uploader_key
     )
@@ -413,17 +450,29 @@ def render_file_upload():
     current_dataframes = st.session_state.get('dataframes', {})
     
     if uploaded_files:
+        # Deduplicate uploaded files by filename to handle multiple uploads of same file
+        unique_files = {}
+        for uploaded_file in uploaded_files:
+            filename = uploaded_file.name
+            if filename not in unique_files:
+                unique_files[filename] = uploaded_file
+        
+        # Check if there were duplicates and show info
+        if len(uploaded_files) > len(unique_files):
+            duplicate_count = len(uploaded_files) - len(unique_files)
+            st.info(f"ℹ️ Note: {duplicate_count} duplicate file(s) detected in upload widget. Processing {len(unique_files)} unique file(s).")
+        
         # Files are present in widget - process them and update dataframes
         new_dataframes = {}
-        for uploaded_file in uploaded_files:
+        for uploaded_file in unique_files.values():
             df = load_file_to_dataframe(uploaded_file)
             if df is not None:
                 table_name = os.path.splitext(uploaded_file.name)[0]
                 new_dataframes[table_name] = df
         
-        # Update session state to match widget
+        # Update session state to match widget (using deduplicated files)
         st.session_state.dataframes = new_dataframes
-        st.session_state.uploaded_files = {f.name: f for f in uploaded_files}
+        st.session_state.uploaded_files = unique_files
         
         # If this is a change from current state, refresh UI
         if set(new_dataframes.keys()) != set(current_dataframes.keys()):
@@ -490,7 +539,18 @@ def render_file_upload():
         with st.expander("📊 Data Preview & Statistics", expanded=False):
             render_data_preview()
     else:
-        st.info("No data uploaded yet")
+        st.info("📁 No data uploaded yet")
+        st.markdown("""
+        **Supported file formats:**
+        - 📊 **CSV/Text**: `.csv`, `.tsv`, `.txt`, `.dat`, `.tab` files
+        - 🗃️ **Parquet**: `.parquet`, `.pq`, `.pqt` files  
+        - 🔢 **NumPy**: `.npy`, `.npz` files
+        
+        💡 **Tips**: 
+        - TSV files use tab separators, TXT files auto-detect delimiters
+        - Parquet files support multiple extensions (.parquet, .pq, .pqt)
+        - NumPy .npz files can contain multiple arrays
+        """)
     
     return bool(current_dataframes)
 
@@ -550,14 +610,21 @@ def render_processing_section(config: TaskConfig):
         with col1:
             st.markdown(f"**Model:** {LLM_MODELS[config.llm_model]['name']}")
             st.markdown(f"**Method:** {config.method}")
-            st.markdown(f"**Task:** {config.task_name}")
+            # Show "Custom Task" if custom task checkbox is checked, otherwise show the selected task
+            if config.use_custom_task:
+                st.markdown(f"**Task:** Custom Task")
+            else:
+                st.markdown(f"**Task:** {config.task_name}")
         with col2:
             st.markdown(f"**Max Rounds:** {config.max_rounds}")
             st.markdown(f"**Cache Strategy:** {config.cache_strategy}")
             st.markdown(f"**Seed:** {config.seed}")
         
-        if config.custom_task:
-            st.markdown(f"**Custom Task:** {config.custom_task}")
+        if config.use_custom_task:
+            if config.custom_task and config.custom_task.strip():
+                st.markdown(f"**Custom Description:** {config.custom_task}")
+            else:
+                st.markdown(f"**Custom Description:** *Not specified yet*")
         
         if st.session_state.dataframes:
             st.markdown(f"**Tables:** {', '.join(st.session_state.dataframes.keys())}")
@@ -569,14 +636,31 @@ def render_processing_section(config: TaskConfig):
     has_data = bool(current_dataframes_check) and len(current_dataframes_check) > 0
     has_credentials = st.session_state.get('aws_credentials_valid', False)
     not_running = not st.session_state.get('task_running', False)
+    
+    # Check if custom task has description (for warning purposes only)
+    custom_task_has_description = True
+    if config.use_custom_task:
+        custom_task_has_description = bool(config.custom_task and config.custom_task.strip())
+    
     ready_to_run = has_data and has_credentials and not_running
     
     # ALWAYS show the Run AutoG2 button - make it very prominent
     # st.markdown("---")
-    # st.markdown("### 🚀 Run AutoG2 Processing")
     
-    # Create a large, centered button
-    col1, col2, col3 = st.columns([1, 3, 1])
+    # # Create a prominent button section
+    # st.markdown("""
+    # <div style="
+    #     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    #     padding: 2rem;
+    #     border-radius: 1rem;
+    #     margin: 1rem 0;
+    #     text-align: center;
+    #     border: 1px solid #e1e5e9;
+    # ">
+    # """, unsafe_allow_html=True)
+    
+    # Create a perfectly centered button with better spacing
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         # Create detailed help text for debugging
         if ready_to_run:
@@ -596,14 +680,21 @@ def render_processing_section(config: TaskConfig):
             type="primary",
             disabled=not ready_to_run,
             help=help_text,
-            key="run_autog2_main_btn"
+            key="run_autog2_main_btn",
+            use_container_width=True
         )
+    
+    # Close the styled container
+    st.markdown("</div>", unsafe_allow_html=True)
     
 
     
     # Show what will happen when button is clicked
     if ready_to_run:
         st.info("💡 This will analyze your data and generate a graph schema using AI.")
+        # Show warning for custom task without description (but don't disable)
+        if config.use_custom_task and not custom_task_has_description:
+            st.warning("⚠️ Custom task is enabled but no description provided. AutoG2 will use the default task behavior.")
     elif st.session_state.get('task_running', False):
         st.info("🔄 AutoG2 is currently processing. Please wait for completion or stop the process above.")
     else:
@@ -1214,12 +1305,25 @@ def run_autog2(config: TaskConfig):
         add_log_entry(f"DEBUG: Calling service.run_autog2 with:")
         add_log_entry(f"  - llm_name: {config.llm_model}")
         add_log_entry(f"  - method: '{config.method}'")
-        add_log_entry(f"  - task_name: {config.task_name}")
+        # Show appropriate task information in logs
+        if config.use_custom_task:
+            add_log_entry(f"  - task_name: Custom Task")
+            if config.custom_task and config.custom_task.strip():
+                add_log_entry(f"  - custom_description: {config.custom_task}")
+            else:
+                add_log_entry(f"  - custom_description: Not specified")
+        else:
+            add_log_entry(f"  - task_name: {config.task_name}")
         add_log_entry(f"  - max_rounds: {config.max_rounds}")
         
         # Ensure method parameter is definitely not None
         method_param = config.method if config.method is not None else "autog-s"
         add_log_entry(f"DEBUG: Final method parameter: '{method_param}'")
+        
+        # Only pass custom task description if it's actually provided
+        custom_desc = None
+        if config.use_custom_task and config.custom_task and config.custom_task.strip():
+            custom_desc = config.custom_task
         
         agent_history, analysis_result, output_path, generated_files = service.run_autog2(
             dataframes=st.session_state.dataframes,
@@ -1229,7 +1333,8 @@ def run_autog2(config: TaskConfig):
             dataset_name=f"webapp_{st.session_state.session_id}",
             seed=config.seed,
             max_rounds=config.max_rounds,
-            progress_callback=progress_callback
+            progress_callback=progress_callback,
+            custom_task_description=custom_desc
         )
         
         # Parse agent history for detailed round information

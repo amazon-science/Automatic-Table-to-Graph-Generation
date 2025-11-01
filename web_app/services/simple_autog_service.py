@@ -209,10 +209,22 @@ class SimpleAutoGService:
         dataset_name: str = "webapp_dataset",
         seed: int = 0,
         max_rounds: int = 5,
-        progress_callback=None
+        progress_callback=None,
+        custom_task_description: str = None
     ) -> Tuple[str, str, str, Dict[str, str]]:
         """
         Run AutoG2 processing
+        
+        Args:
+            dataframes: Dictionary of table name to DataFrame
+            llm_name: Name of the LLM model to use
+            method: AutoG processing method (autog-s, autog-m, baseline)
+            task_name: Task identifier (e.g., "custom:kg")
+            dataset_name: Name for the dataset
+            seed: Random seed for reproducibility
+            max_rounds: Maximum number of processing rounds
+            progress_callback: Optional callback for progress updates
+            custom_task_description: Optional custom task description (overrides default task description)
         
         Returns:
             Tuple of (agent_history, analysis_result, output_path, generated_files)
@@ -238,9 +250,14 @@ class SimpleAutoGService:
             # Create DBBRDBDataset
             data = DBBRDBDataset(temp_path)
             
-            # Parse task
+            # Parse task and get description
             dataset, task = task_name.split(':')[0], task_name.split(':')[1]
-            task_description = get_task_description(dataset, task)
+            
+            # Use custom task description if provided, otherwise get from task definitions
+            if custom_task_description:
+                task_description = custom_task_description
+            else:
+                task_description = get_task_description(dataset, task)
             
             # Analyze DataFrames
             table_meta_dict = {
