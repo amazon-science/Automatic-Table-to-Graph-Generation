@@ -118,13 +118,18 @@ class SimpleAutoGService:
         }
     
     def get_llm_config(self, llm_name: str) -> Dict[str, Any]:
-        """Get LLM configuration"""
+        """Get LLM configuration - matches webutils/config.py LLM_MODELS"""
         CONTEXT_SIZE = 65536
         OUTPUT_SIZE = 65536
         
         configs = {
             "sonnet4": {
-                "model_name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+                "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0",
+                "context_size": CONTEXT_SIZE,
+                "output_size": OUTPUT_SIZE
+            },
+            "sonnet37": {
+                "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
                 "context_size": CONTEXT_SIZE,
                 "output_size": OUTPUT_SIZE
             },
@@ -133,13 +138,38 @@ class SimpleAutoGService:
                 "context_size": CONTEXT_SIZE,
                 "output_size": OUTPUT_SIZE
             },
-            "haiku": {
-                "model_name": "anthropic.claude-3-haiku-20240307-v1:0",
+            "llama3": {
+                "model_name": "meta.llama3-70b-instruct-v1:0",
+                "context_size": CONTEXT_SIZE,
+                "output_size": OUTPUT_SIZE
+            },
+            "mistralarge": {
+                "model_name": "mistral.mistral-large-2402-v1:0",
+                "context_size": CONTEXT_SIZE,
+                "output_size": OUTPUT_SIZE
+            },
+            "opus3": {
+                "model_name": "anthropic.claude-3-opus-20240229-v1:0",
+                "context_size": CONTEXT_SIZE,
+                "output_size": OUTPUT_SIZE
+            },
+            "opus4": {
+                "model_name": "anthropic.claude-opus-4-20250514-v1:0",
+                "context_size": CONTEXT_SIZE,
+                "output_size": OUTPUT_SIZE
+            },
+            "haiku3": {
+                "model_name": "anthropic.claude-3-haiku-20240229-v1:0",
+                "context_size": CONTEXT_SIZE,
+                "output_size": OUTPUT_SIZE
+            },
+            "sonnet45": {
+                "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
                 "context_size": CONTEXT_SIZE,
                 "output_size": OUTPUT_SIZE
             }
         }
-        return configs.get(llm_name, configs["sonnet3"])
+        return configs.get(llm_name, configs["sonnet4"])
     
     def capitalize_first_alpha(self, text: str) -> str:
         """Capitalize first alphabetic character"""

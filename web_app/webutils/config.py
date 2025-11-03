@@ -6,6 +6,16 @@ Based on the actual AutoG2 backend pipeline
 
 # LLM Model Configurations (matching main.autog2 exactly)
 LLM_MODELS = {
+    "sonnet4": {
+        "name": "Claude Sonnet 4",
+        "model_id": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0",
+        "description": "Latest Claude Sonnet 4 model for advanced reasoning"
+    },
+    "sonnet37": {
+        "name": "Claude 3.7 Sonnet",
+        "model_id": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "description": "Enhanced Claude 3 Sonnet with improved capabilities"
+    },
     "sonnet3": {
         "name": "Claude 3 Sonnet",
         "model_id": "anthropic.claude-3-sonnet-20240229-v1:0",
@@ -20,16 +30,6 @@ LLM_MODELS = {
         "name": "Mistral Large",
         "model_id": "mistral.mistral-large-2402-v1:0",
         "description": "High-performance multilingual model"
-    },
-    "sonnet37": {
-        "name": "Claude 3.7 Sonnet",
-        "model_id": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "description": "Enhanced Claude 3 Sonnet with improved capabilities"
-    },
-    "sonnet4": {
-        "name": "Claude Sonnet 4",
-        "model_id": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0",
-        "description": "Latest Claude Sonnet 4 model for advanced reasoning"
     },
     "opus3": {
         "name": "Claude 3 Opus",
@@ -56,11 +56,13 @@ LLM_MODELS = {
 # AutoG Configuration (matching actual task definitions)
 AUTOG_CONFIG = {
     "methods": [
-        "autog-s",  # Single-round AutoG
-        "autog-m",  # Multi-round AutoG
-        "baseline"
+        "autog-s",  # AutoG-S directly adopts the final output state
+        "autog-a"  # AutoG-A uses an oracle to select the state
     ],
     "datasets": {
+        "avs": [
+            "repeater"  # Predict repeat purchases
+        ],
         "mag": [
             "venue",    # Predict paper venue
             "year",     # Predict publication year
@@ -68,9 +70,6 @@ AUTOG_CONFIG = {
         ],
         "movielens": [
             "ratings"   # Predict user ratings on movies
-        ],
-        "avs": [
-            "repeater"  # Predict repeat purchases
         ],
         "ieeecis": [
             "fraud"     # Predict fraudulent transactions
@@ -89,25 +88,19 @@ AUTOG_CONFIG = {
             "upvote",   # Predict post upvotes
             "churn"     # Predict user churn
         ],
-        "adsp": [
-            "kg"        # Knowledge graph construction
-        ],
         "custom": [
             "relation", # Find primary/foreign keys
             "kg",       # Knowledge graph construction
             "kg2"       # Enhanced knowledge graph construction
-        ],
-        "custom_mag": [
-            "venue"     # Custom MAG venue prediction
         ]
     }
 }
 
 # Default configurations
 DEFAULT_CONFIG = {
-    "llm_model": "sonnet3",
+    "llm_model": "sonnet4",
     "method": "autog-s", 
-    "task": "custom:kg",
+    "task": "custom:relation",
     "seed": 0,
     "cache_strategy": "hybrid"
 }

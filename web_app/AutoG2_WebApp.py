@@ -753,9 +753,6 @@ def render_processing_section(config: TaskConfig):
 
              # show move execution details
             round_logs = st.session_state.get('round_logs', {})
-            print('-------____________')
-            print(current_round, rounds_completed, round_logs)
-            print('-------____________')
             if len(round_logs) > 0:
                 cur_round_logs = round_logs[current_round]
                 show_current_logs(cur_round_logs, round_completed)

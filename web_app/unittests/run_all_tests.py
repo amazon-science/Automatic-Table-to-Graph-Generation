@@ -18,6 +18,7 @@ def run_all_tests():
     
     # List of test modules to run
     test_modules = [
+        'test_imports',
         'test_data_loading',
         'test_schema_generation',
         'test_caching'
@@ -31,7 +32,12 @@ def run_all_tests():
         
         try:
             # Import and run the test
-            if test_module == 'test_data_loading':
+            if test_module == 'test_imports':
+                from test_imports import test_imports_standalone
+                test_imports_standalone()
+                results[test_module] = "✅ PASSED"
+                
+            elif test_module == 'test_data_loading':
                 from test_data_loading import test_data_loading
                 test_data_loading()
                 results[test_module] = "✅ PASSED"
