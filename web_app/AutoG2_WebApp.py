@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AutoG2 Web Application
+AutoG Web Application
 Clean, simplified interface for Automatic Table-to-Graph Generation
 """
 
@@ -38,12 +38,12 @@ for path in paths_to_add:
     if path not in sys.path:
         sys.path.insert(0, path)
 
-# Import AutoG2 components
+# Import AutoG components
 try:
     from services.simple_autog_service import SimpleAutoGService
     from webutils.config import LLM_MODELS, AUTOG_CONFIG, DEFAULT_CONFIG
 except ImportError as e:
-    st.error(f"Failed to import AutoG2 components: {e}")
+    st.error(f"Failed to import AutoG components: {e}")
     st.error("Make sure you're running from the correct directory with all dependencies installed.")
     st.stop()
 
@@ -52,7 +52,7 @@ load_dotenv()
 
 # Page configuration
 st.set_page_config(
-    page_title="AutoG2 - Automatic Table-to-Graph Generation",
+    page_title="AutoG - Automatic Table-to-Graph Generation",
     page_icon="🔗",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -184,7 +184,7 @@ class TaskConfig:
             self.method = "autog-s"  # Default fallback
         
         # Ensure method is valid
-        valid_methods = ["autog-s", "autog-m", "baseline"]
+        valid_methods = ["autog-s", "autog-a"]
         if self.method not in valid_methods:
             self.method = "autog-s"
 
@@ -257,14 +257,14 @@ def load_file_to_dataframe(uploaded_file) -> Optional[pd.DataFrame]:
 def render_sidebar():
     """Render sidebar configuration"""
     with st.sidebar:
-        # st.markdown("## 🔗 AutoG2 Configuration")
+        # st.markdown("## 🔗 AutoG Configuration")
         
-        # Check if AutoG2 is currently running
+        # Check if AutoG is currently running
         task_running = st.session_state.get('task_running', False)
         
         # if task_running:
             # st.warning("⚠️ **Configuration locked during processing**")
-            # st.info("Settings are disabled while AutoG2 is running to prevent conflicts.")
+            # st.info("Settings are disabled while AutoG is running to prevent conflicts.")
         
         # AWS Credentials Section
         st.markdown("### 🔐 AWS Credentials")
@@ -306,7 +306,7 @@ export AWS_DEFAULT_REGION=us-west-2
             "LLM Model",
             options=list(LLM_MODELS.keys()),
             index=list(LLM_MODELS.keys()).index(DEFAULT_CONFIG["llm_model"]),
-            help="Select the language model for AutoG2 processing",
+            help="Select the language model for AutoG processing",
             disabled=task_running,
             key=f"llm_model_{widget_counter}"
         )
@@ -394,7 +394,7 @@ export AWS_DEFAULT_REGION=us-west-2
                 min_value=1,
                 max_value=50,
                 value=20,
-                help="Maximum number of processing rounds for AutoG2 agent",
+                help="Maximum number of processing rounds for AutoG agent",
                 disabled=task_running,
                 key=f"max_rounds_{widget_counter}"
             )
@@ -602,7 +602,7 @@ def render_data_preview():
 
 def render_processing_section(config: TaskConfig):
     """Render processing section"""
-    st.markdown('<div class="section-header">🚀 AutoG2 Processing Center</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">🚀 AutoG Processing Center</div>', unsafe_allow_html=True)
     
     # Configuration summary in a clean format
     with st.expander("📋 Current Configuration", expanded=False):
@@ -644,7 +644,7 @@ def render_processing_section(config: TaskConfig):
     
     ready_to_run = has_data and has_credentials and not_running
     
-    # ALWAYS show the Run AutoG2 button - make it very prominent
+    # ALWAYS show the Run AutoG button - make it very prominent
     # st.markdown("---")
     
     # # Create a prominent button section
@@ -664,7 +664,7 @@ def render_processing_section(config: TaskConfig):
     with col2:
         # Create detailed help text for debugging
         if ready_to_run:
-            help_text = "Click to start AutoG2 table-to-graph generation"
+            help_text = "Click to start AutoG table-to-graph generation"
         else:
             missing = []
             if not has_data:
@@ -694,9 +694,9 @@ def render_processing_section(config: TaskConfig):
         st.info("💡 This will analyze your data and generate a graph schema using AI.")
         # Show warning for custom task without description (but don't disable)
         if config.use_custom_task and not custom_task_has_description:
-            st.warning("⚠️ Custom task is enabled but no description provided. AutoG2 will use the default task behavior.")
+            st.warning("⚠️ Custom task is enabled but no description provided. AutoG will use the default task behavior.")
     elif st.session_state.get('task_running', False):
-        st.info("🔄 AutoG2 is currently processing. Please wait for completion or stop the process above.")
+        st.info("🔄 AutoG is currently processing. Please wait for completion or stop the process above.")
     else:
         st.warning("⚠️ Button will be enabled when all requirements are met.")
     
@@ -704,7 +704,7 @@ def render_processing_section(config: TaskConfig):
     
 
     
-    # Process AutoG2 when button is clicked
+    # Process AutoG when button is clicked
     if run_button:
         # Set task_running immediately to disable configuration
         st.session_state.task_running = True
@@ -717,10 +717,10 @@ def render_processing_section(config: TaskConfig):
     has_results = bool(st.session_state.get('results'))
     
     if task_running or has_logs or has_results:
-        if task_running:
-            st.markdown("### 🤖 AutoG2 Agent Running")
-        else:
-            st.markdown("### 🤖 AutoG2 Agent Results")
+        # if task_running:
+            # st.markdown("### 🤖 AutoG Agent Running")
+        # else:
+            # st.markdown("### 🤖 AutoG Agent Results")
         
         # Processing status header (always show when processing or completed)
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -741,15 +741,25 @@ def render_processing_section(config: TaskConfig):
             rounds_completed = st.session_state.get('rounds_completed', 0)
             
             if current_round > 0:
-                round_display.metric("Current Round", f"Round {current_round}")
-                progress_bar.progress(min(50 + (current_round * 3), 90))
+                round_display.metric("Current Progress", f"Round {current_round}")
+                progress_bar.progress(min(8 + (current_round * 10), 90))
                 status_indicator.info("🔄 Running")
-                status_text.text(f"🚀 AutoG2 agent: Round {current_round}")
+                status_text.text(f"🚀 AutoG agent: Round {current_round}")
             else:
-                round_display.metric("Current Round", "Starting...")
-                progress_bar.progress(10)
+                round_display.metric("Current Progress", "Starting...")
+                progress_bar.progress(8)
                 status_indicator.info("🔄 Initializing")
-                status_text.text("🔄 Initializing AutoG2...")
+                status_text.text("🔄 Initializing AutoG...")
+
+             # show move execution details
+            round_logs = st.session_state.get('round_logs', {})
+            print('-------____________')
+            print(current_round, rounds_completed, round_logs)
+            print('-------____________')
+            if len(round_logs) > 0:
+                cur_round_logs = round_logs[current_round]
+                show_current_logs(cur_round_logs, round_completed)
+
         else:
             # After processing - show final state
             rounds_completed = st.session_state.get('rounds_completed', 0)
@@ -773,190 +783,197 @@ def render_processing_section(config: TaskConfig):
             run_autog2(config)
         
         # Show logs section
-        st.markdown("---")
-        st.markdown("#### 📋 Round Execution Details")
+        # st.markdown("---")
+        # st.markdown("#### 📋 Round Execution Details")
         
-        if task_running:
-            # During processing - show live log stream
-            st.info("🔄 Live logs will appear here as AutoG2 processes...")
+        # if task_running:
+        #     # During processing - show live log stream
+        #     st.info("🔄 Live logs will appear here as AutoG processes...")
             
-            # Create live log container
-            live_log_container = st.empty()
-            st.session_state.logs_placeholder = live_log_container
+        #     # Create live log container
+        #     live_log_container = st.empty()
+        #     st.session_state.logs_placeholder = live_log_container
             
-            # Show current logs if any
-            with live_log_container.container():
-                render_live_logs()
+        #     # Show current logs if any
+        #     with live_log_container.container():
+        #         render_live_logs()
+        # else:
+        #   # After processing - show detailed round logs
+        #   render_move_based_logs()
+
+
+def show_current_logs(cur_logs, round_completed):
+    round_start_logs = []
+    move_logs = []
+    error_logs = []
+
+    current_move_logs = []
+
+    for log in cur_logs:
+        message = log['message']
+        if "=== Starting Round" in message:
+            round_start_logs.append(log)
+        elif "Executing move:" in message:
+            # If we have a previous move, save it
+            if current_move is not None:
+                move_logs.append({
+                    'move': current_move,
+                    'logs': current_move_logs.copy()
+                })
+            
+            # Start new move
+            current_move = message.replace("Executing move: ", "")
+            current_move_logs = [log]
+        elif "ERROR:" in message:
+            if current_move is not None:
+                current_move_logs.append(log)
+            else:
+                error_logs.append(log)
         else:
-            # After processing - show detailed round logs
-            render_move_based_logs()
+            if current_move is not None:
+                current_move_logs.append(log)
+            # else: ignore other logs since we don't display them
 
 
-
-def create_realtime_logger():
-    """Create a simple callback logger for real-time round execution details"""
-    def log_callback(message, round_num=None, move_data=None):
-        """Simple callback that logs and immediately updates UI"""
-        # Add to session state logs
-        add_log_entry(message, round_num)
-        
-        # Force immediate UI update with the detailed structure
-        try:
-            logs_placeholder = st.session_state.get('logs_placeholder')
-            if logs_placeholder:
-                # Clear and re-render with updated logs
-                logs_placeholder.empty()
-                with logs_placeholder.container():
-                    render_live_logs()
-        except Exception as e:
-            # If UI update fails, at least log it for debugging
-            try:
-                add_log_entry(f"UI update failed: {str(e)}")
-            except:
-                pass
-        
-        return True  # Continue processing
+    # Create expandable section for each round
+    current_round = st.session_state.get('current_round', 0)
+    task_running = st.session_state.get('task_running', False)
+    is_current = (current_round > round_completed and task_running)
+    round_status = "🔄" if is_current else "✅"
     
-    return log_callback
+    # Count different types of entries for better summary
+    move_count = len(move_logs)
+    error_count = len(error_logs)
+    
+    # Create a more informative title
+    title_parts = [f"Round {round_num}"]
+    if move_count > 0:
+        title_parts.append(f"{move_count} moves")
+    if error_count > 0:
+        title_parts.append(f"{error_count} errors")
+    
+    title = f"{round_status} {' - '.join(title_parts)}"
+    
+    with st.expander(title, expanded=is_current):
+        if logs:
+            # Show round start information
+            if round_start_logs:
+                for log in round_start_logs:
+                    st.markdown(f"**[{log['timestamp']}]** {log['message']}")
+            
+            # Show moves in separate expandable sections
+            if move_logs:
+                st.markdown("**Moves Executed:**")
+                for i, move_data in enumerate(move_logs):
+                    move_desc = move_data['move']
+                    move_logs_list = move_data['logs']
+                    
+                    # Simple move title without action parsing
+                    move_title = f"Move {i+1}"
+                    
+                    # Check if move has errors
+                    has_errors = any("ERROR:" in log['message'] for log in move_logs_list)
+                    move_status = "❌" if has_errors else "✅"
+                    
+                    with st.expander(f"{move_status} {move_title}", expanded=False):
+                        # Show move details
+                        st.code(move_desc, language='json')
+                        
+                        # Show move logs
+                        if len(move_logs_list) > 1:  # More than just the "Executing move" log
+                            st.markdown("**Execution Log:**")
+                            for log in move_logs_list[1:]:  # Skip the first "Executing move" log
+                                timestamp = log['timestamp']
+                                message = log['message']
+                                if "ERROR:" in message:
+                                    st.error(f"[{timestamp}] {message}")
+                                else:
+                                    st.text(f"[{timestamp}] {message}")
+            
+            # Show standalone errors
+            if error_logs:
+                st.markdown("**Errors:**")
+                for log in error_logs:
+                    st.error(f"[{log['timestamp']}] {log['message']}")
+                
 
-def render_live_logs():
-    """Render live logs during processing using the same structure as render_move_based_logs"""
-    round_logs = st.session_state.get('round_logs', {})
+            
+            # Show compact summary
+            if len(logs) > 1:
+                start_time = logs[0]['timestamp']
+                end_time = logs[-1]['timestamp']
+                st.caption(f"⏱️ {start_time} - {end_time} ({len(logs)} entries)")
+        else:
+            st.info("No logs available for this round")
+
+
+# def create_realtime_logger():
+#     """Create a simple callback logger for real-time round execution details"""
+#     def log_callback(message, round_num=None, move_data=None):
+#         """Simple callback that logs and immediately updates UI"""
+#         # Add to session state logs
+#         add_log_entry(message, round_num)
+        
+#         # Force immediate UI update with the detailed structure
+#         try:
+#             logs_placeholder = st.session_state.get('logs_placeholder')
+#             if logs_placeholder:
+#                 # Clear and re-render with updated logs
+#                 logs_placeholder.empty()
+#                 with logs_placeholder.container():
+#                     st.info("📝 Live logs will appear here during processing...")
+#         except Exception as e:
+#             # If UI update fails, at least log it for debugging
+#             try:
+#                 add_log_entry(f"UI update failed: {str(e)}")
+#             except:
+#                 pass
+        
+#         return True  # Continue processing
     
-    if not round_logs:
-        st.info("📝 Round details will appear here as AutoG2 processes...")
-        return
-    
-    # Use the exact same structure as render_move_based_logs but for real-time display
-    for round_num in sorted(round_logs.keys()):
-        logs = round_logs[round_num]
-        
-        # Organize logs by type (same as render_move_based_logs)
-        round_start_logs = []
-        move_logs = []
-        error_logs = []
-        
-        current_move = None
-        current_move_logs = []
-        
-        for log in logs:
-            message = log['message']
-            if "=== Starting Round" in message:
-                round_start_logs.append(log)
-            elif "Executing move:" in message:
-                # If we have a previous move, save it
-                if current_move is not None:
-                    move_logs.append({
-                        'move': current_move,
-                        'logs': current_move_logs.copy()
-                    })
-                
-                # Start new move
-                current_move = message.replace("Executing move: ", "")
-                current_move_logs = [log]
-            elif "ERROR:" in message:
-                if current_move is not None:
-                    current_move_logs.append(log)
-                else:
-                    error_logs.append(log)
-            else:
-                if current_move is not None:
-                    current_move_logs.append(log)
-        
-        # Don't forget the last move
-        if current_move is not None:
-            move_logs.append({
-                'move': current_move,
-                'logs': current_move_logs
-            })
-        
-        # Create expandable section for each round (same as render_move_based_logs)
-        current_round = st.session_state.get('current_round', 0)
-        task_running = st.session_state.get('task_running', False)
-        is_current = (round_num == current_round and task_running)
-        round_status = "🔄" if is_current else "✅"
-        
-        # Count different types of entries for better summary
-        move_count = len(move_logs)
-        error_count = len(error_logs)
-        
-        # Create a more informative title
-        title_parts = [f"Round {round_num}"]
-        if move_count > 0:
-            title_parts.append(f"{move_count} moves")
-        if error_count > 0:
-            title_parts.append(f"{error_count} errors")
-        
-        title = f"{round_status} {' - '.join(title_parts)}"
-        
-        with st.expander(title, expanded=is_current):
-            if logs:
-                # Show round start information
-                if round_start_logs:
-                    for log in round_start_logs:
-                        st.markdown(f"**[{log['timestamp']}]** {log['message']}")
-                
-                # Show moves in separate expandable sections
-                if move_logs:
-                    st.markdown("**Moves Executed:**")
-                    for i, move_data in enumerate(move_logs):
-                        move_desc = move_data['move']
-                        move_logs_list = move_data['logs']
-                        
-                        # Simple move title without action parsing
-                        move_title = f"Move {i+1}"
-                        
-                        # Check if move has errors
-                        has_errors = any("ERROR:" in log['message'] for log in move_logs_list)
-                        move_status = "❌" if has_errors else "✅"
-                        
-                        # Expand current move if this is the current round and latest move
-                        expand_move = is_current and i == len(move_logs) - 1
-                        
-                        with st.expander(f"{move_status} {move_title}", expanded=expand_move):
-                            # Show move details
-                            st.code(move_desc, language='json')
-                            
-                            # Show move logs
-                            if len(move_logs_list) > 1:  # More than just the "Executing move" log
-                                st.markdown("**Execution Log:**")
-                                for log in move_logs_list[1:]:  # Skip the first "Executing move" log
-                                    timestamp = log['timestamp']
-                                    message = log['message']
-                                    if "ERROR:" in message:
-                                        st.error(f"[{timestamp}] {message}")
-                                    else:
-                                        st.text(f"[{timestamp}] {message}")
-                
-                # Show standalone errors
-                if error_logs:
-                    st.markdown("**Errors:**")
-                    for log in error_logs:
-                        st.error(f"[{log['timestamp']}] {log['message']}")
-                
-                # Show compact summary
-                if len(logs) > 1:
-                    start_time = logs[0]['timestamp']
-                    end_time = logs[-1]['timestamp']
-                    st.caption(f"⏱️ {start_time} - {end_time} ({len(logs)} entries)")
-            else:
-                st.info("No logs available for this round")
+#     return log_callback
+
+# # render_live_logs() function removed - was duplicate of render_move_based_logs() and unused
 
 
 def render_move_based_logs():
-    """Render move-based logs integrated into the AutoG2 Agent Running section"""
+    """Render move-based logs integrated into the AutoG Agent Running section"""
     round_logs = st.session_state.get('round_logs', {})
     
     if not round_logs:
-        st.info("📝 Round details will appear here as AutoG2 processes...")
+        # st.info("📝 Round details will appear here as AutoG processes...")
         return
     
     st.markdown("---")
     st.markdown("#### 📋 Round Execution Details")
+
+    sorted_rounds = sorted(round_logs.keys())
+    rounds_to_show = []
+    
+    # for round_num in sorted_rounds:
+    #     logs = round_logs[round_num]
+    #     # Check if this round has no moves
+    #     if len(logs) <= 2: 
+    #         continue  # Skip this round
+    #     else:
+    #         rounds_to_show.append(round_num)
+    
+    # # # Show info message if last round was skipped
+    # # if last_round_skipped:
+    # #     st.info("ℹ️ Final completion round hidden (contains only termination message)")
+    
+    # # If no rounds to show after filtering, show a message
+    # if not rounds_to_show:
+    #     st.info("📝 No detailed round execution to display")
+    #     return
     
     # Show detailed logs for each round with move organization
-    for round_num in sorted(round_logs.keys()):
+    for round_num in sorted_rounds:
         logs = round_logs[round_num]
+        
+        # Not show the last round without moves
+        if len(logs) <= 2 and round_num == sorted_rounds[-1]:
+            break
         
         # Organize logs by type
         round_start_logs = []
@@ -1069,60 +1086,60 @@ def render_move_based_logs():
             else:
                 st.info("No logs available for this round")
 
-def create_basic_logger():
-    """
-    Create a basic callback logger for real-time updates
+# def create_basic_logger():
+#     """
+#     Create a basic callback logger for real-time updates
     
-    This is a simple callback-based logging approach that:
-    1. Gets called immediately when AutoG2 has something to log
-    2. Stores the log in session state
-    3. Tries to update the UI in real-time
+#     This is a simple callback-based logging approach that:
+#     1. Gets called immediately when AutoG has something to log
+#     2. Stores the log in session state
+#     3. Tries to update the UI in real-time
     
-    Usage: 
-    - AutoG2 service calls: logger_callback("Starting round 1", round_num=1)
-    - The callback immediately updates the UI
-    - No complex threading or queuing needed
-    """
-    def log_callback(message, round_num=None, data=None):
-        """Basic callback function that logs messages in real-time"""
-        timestamp = datetime.now().strftime("%H:%M:%S")
+#     Usage: 
+#     - AutoG service calls: logger_callback("Starting round 1", round_num=1)
+#     - The callback immediately updates the UI
+#     - No complex threading or queuing needed
+#     """
+#     def log_callback(message, round_num=None, data=None):
+#         """Basic callback function that logs messages in real-time"""
+#         timestamp = datetime.now().strftime("%H:%M:%S")
         
-        # Create log entry
-        log_entry = {
-            'timestamp': timestamp,
-            'message': str(message),
-            'round': round_num,
-            'data': data
-        }
+#         # Create log entry
+#         log_entry = {
+#             'timestamp': timestamp,
+#             'message': str(message),
+#             'round': round_num,
+#             'data': data
+#         }
         
-        # Add to session state logs
-        if round_num is not None:
-            # Add to round-specific logs
-            if 'round_logs' not in st.session_state:
-                st.session_state.round_logs = {}
-            if round_num not in st.session_state.round_logs:
-                st.session_state.round_logs[round_num] = []
-            st.session_state.round_logs[round_num].append(log_entry)
-        else:
-            # Add to general processing logs
-            if 'processing_logs' not in st.session_state:
-                st.session_state.processing_logs = []
-            st.session_state.processing_logs.append(log_entry)
+#         # Add to session state logs
+#         if round_num is not None:
+#             # Add to round-specific logs
+#             if 'round_logs' not in st.session_state:
+#                 st.session_state.round_logs = {}
+#             if round_num not in st.session_state.round_logs:
+#                 st.session_state.round_logs[round_num] = []
+#             st.session_state.round_logs[round_num].append(log_entry)
+#         else:
+#             # Add to general processing logs
+#             if 'processing_logs' not in st.session_state:
+#                 st.session_state.processing_logs = []
+#             st.session_state.processing_logs.append(log_entry)
         
-        # Update current round if provided
-        if round_num is not None:
-            st.session_state.current_round = round_num
+#         # Update current round if provided
+#         if round_num is not None:
+#             st.session_state.current_round = round_num
         
-        # Try to update UI in real-time (basic approach)
-        try:
-            # Update live logs display if placeholder exists
-            logs_placeholder = st.session_state.get('logs_placeholder')
-            if logs_placeholder:
-                with logs_placeholder.container():
-                    render_live_logs()
-        except:
-            # Ignore UI update errors during processing
-            pass
+#         # Try to update UI in real-time (basic approach)
+#         try:
+#             # Update live logs display if placeholder exists
+#             logs_placeholder = st.session_state.get('logs_placeholder')
+#             if logs_placeholder:
+#                 with logs_placeholder.container():
+#                     st.info("📝 Live logs will appear here during processing...")
+#         except:
+#             # Ignore UI update errors during processing
+#             pass
         
 def add_log_entry(message: str, round_num: int = None):
     """Add a log entry to the session state"""
@@ -1151,7 +1168,7 @@ def add_log_entry(message: str, round_num: int = None):
         pass
 
 def run_autog2(config: TaskConfig):
-    """Run AutoG2 processing with real round tracking and logging"""
+    """Run AutoG processing with real round tracking and logging"""
     # task_running is already set to True before this function is called
     st.session_state.stop_requested = False
     
@@ -1173,7 +1190,7 @@ def run_autog2(config: TaskConfig):
     status_text = progress_indicators.get('status_text')
     
     try:
-        add_log_entry("Starting AutoG2 processing...")
+        add_log_entry("Starting AutoG processing...")
         
         # Debug: Check if autog_service exists
         if 'autog_service' not in st.session_state:
@@ -1189,18 +1206,18 @@ def run_autog2(config: TaskConfig):
         # Check if backend is available
         from services.simple_autog_service import BACKEND_AVAILABLE
         if not BACKEND_AVAILABLE:
-            raise ImportError("AutoG2 backend modules are not available. Please check your environment setup.")
+            raise ImportError("AutoG backend modules are not available. Please check your environment setup.")
         
         # Initial setup
-        add_log_entry("Initializing AutoG2 system...")
+        add_log_entry("Initializing AutoG system...")
         if status_indicator:
             status_indicator.info("🔄 Initializing")
         if status_text:
-            status_text.text("🔄 Initializing AutoG2 and preparing data...")
+            status_text.text("🔄 Initializing AutoG and preparing data...")
         if round_display:
-            round_display.metric("Current Round", "Setup")
+            round_display.metric("Current Progress", "Setup")
         if progress_bar:
-            progress_bar.progress(10)
+            progress_bar.progress(8)
             
         add_log_entry("Loading data and generating metadata...")
         add_log_entry(f"Configuration: Model={config.llm_model}, Method={config.method}, Max Rounds={config.max_rounds}")
@@ -1214,28 +1231,28 @@ def run_autog2(config: TaskConfig):
             config.method = "autog-s"  # Force to valid default
         
         # Ensure method is in valid list
-        valid_methods = ["autog-s", "autog-m", "baseline"]
+        valid_methods = ["autog-s", "autog-a"]
         if config.method not in valid_methods:
             add_log_entry(f"WARNING: Unknown method '{config.method}', using 'autog-s'")
             config.method = "autog-s"
         
-        # Start AutoG2 processing - show preparing state
+        # Start AutoG processing - show preparing state
         if status_indicator:
             status_indicator.warning("🚀 Running")
         if status_text:
-            status_text.text("🚀 Starting AutoG2 agent...")
+            status_text.text("🚀 Starting AutoG agent...")
         if round_display:
-            round_display.metric("Current Round", "Starting...")
+            round_display.metric("Current Progress", "Starting...")
         if progress_bar:
-            progress_bar.progress(50)
+            progress_bar.progress(8)
         
-        add_log_entry("Starting AutoG2 agent execution...")
+        add_log_entry("Starting AutoG agent execution...")
         
         # Define progress callback to update UI and logs
         def progress_callback(message):
             import re
             
-            # Parse different types of AutoG2 output
+            # Parse different types of AutoG output
             round_match = re.search(r'Round:\s*(\d+)', message)
             move_match = re.search(r'Move:\s*(.+)', message)
             error_match = re.search(r'Error:\s*(.+)', message)
@@ -1247,11 +1264,11 @@ def run_autog2(config: TaskConfig):
                 current_round_num = int(round_match.group(1))
                 st.session_state.current_round = current_round_num + 1  # Display as 1-indexed
                 if round_display:
-                    round_display.metric("Current Round", f"Round {current_round_num + 1}")
+                    round_display.metric("Current Progress", f"Round {current_round_num + 1}")
                 if status_text:
-                    status_text.text(f"🚀 AutoG2 agent: Round {current_round_num + 1}")
+                    status_text.text(f"🚀 AutoG agent: Round {current_round_num + 1}")
                 if progress_bar:
-                    progress_bar.progress(min(50 + ((current_round_num + 1) * 3), 90))
+                    progress_bar.progress(min(8 + ((current_round_num + 1) * 10), 90))
                 
                 # Add round-specific log
                 add_log_entry(f"=== Starting Round {current_round_num + 1} ===", current_round_num + 1)
@@ -1275,15 +1292,15 @@ def run_autog2(config: TaskConfig):
                 
             elif "No more action can be taken" in message:
                 # Completion message
-                add_log_entry("✅ AutoG2 completed successfully - no more actions needed")
+                add_log_entry("✅ AutoG completed successfully - no more actions needed")
                 if status_text:
-                    status_text.text("✅ AutoG2 processing completed")
+                    status_text.text("✅ AutoG processing completed")
                 
             elif "Too many errors" in message:
                 # Error termination
-                add_log_entry("❌ AutoG2 stopped due to too many errors")
+                add_log_entry("❌ AutoG stopped due to too many errors")
                 if status_text:
-                    status_text.text("❌ AutoG2 stopped due to errors")
+                    status_text.text("❌ AutoG stopped due to errors")
                 
             else:
                 # General message
@@ -1293,8 +1310,8 @@ def run_autog2(config: TaskConfig):
             
             return True  # Continue processing
             
-        # Run the actual AutoG2 processing with progress callback
-        add_log_entry("Executing AutoG2 processing pipeline...")
+        # Run the actual AutoG processing with progress callback
+        add_log_entry("Executing AutoG processing pipeline...")
         
         # Final method validation before service call
         if config.method is None or config.method == "None" or str(config.method).strip() == "":
@@ -1302,7 +1319,7 @@ def run_autog2(config: TaskConfig):
             config.method = "autog-s"
         
         # Debug: Log all parameters being passed
-        add_log_entry(f"DEBUG: Calling service.run_autog2 with:")
+        add_log_entry(f"DEBUG: Calling service.run_autog with:")
         add_log_entry(f"  - llm_name: {config.llm_model}")
         add_log_entry(f"  - method: '{config.method}'")
         # Show appropriate task information in logs
@@ -1356,10 +1373,10 @@ def run_autog2(config: TaskConfig):
             # Check if hit max rounds
             if any(phrase in agent_history.lower() for phrase in ['maximum', 'max', 'limit', 'threshold']):
                 hit_max_rounds = True
-                add_log_entry(f"AutoG2 reached maximum rounds limit ({config.max_rounds})")
+                add_log_entry(f"AutoG reached maximum rounds limit ({config.max_rounds})")
         
         # Use the current round from real-time tracking
-        st.session_state.rounds_completed = actual_rounds if actual_rounds > 0 else 1
+        st.session_state.rounds_completed = actual_rounds-1 if actual_rounds > 0 else 1
         add_log_entry(f"Processing completed with {st.session_state.rounds_completed} rounds")
         
         # Update progress indicators to show completion
@@ -1372,7 +1389,7 @@ def run_autog2(config: TaskConfig):
         if progress_bar:
             progress_bar.progress(100)  # Set progress bar to 100%
         
-        add_log_entry("AutoG2 processing completed successfully!")
+        add_log_entry("AutoG processing completed successfully!")
         add_log_entry(f"Generated {len(generated_files)} output files")
         
         # Store results in session state
@@ -1398,7 +1415,7 @@ def run_autog2(config: TaskConfig):
     except Exception as e:
         if status_indicator:
             status_indicator.error("❌ Failed")
-        error_msg = f"AutoG2 processing failed: {str(e)}"
+        error_msg = f"AutoG processing failed: {str(e)}"
         st.error(f"❌ {error_msg}")
         add_log_entry(f"ERROR: {error_msg}")
         
@@ -1412,7 +1429,7 @@ def run_autog2(config: TaskConfig):
             st.markdown("**Troubleshooting Tips:**")
             st.markdown("- Ensure you're running in the `autog-cpu` conda environment")
             st.markdown("- Check that AWS credentials are valid and have Bedrock access")
-            st.markdown("- Verify that all AutoG2 dependencies are installed")
+            st.markdown("- Verify that all AutoG dependencies are installed")
             st.markdown("- Try with a simpler dataset or different task")
             
     finally:
@@ -1583,8 +1600,8 @@ def main():
     SessionState.init()
     
     # Header
-    st.markdown('<div class="main-header">🔗 AutoG2: Automatic Table-to-Graph Generation</div>', unsafe_allow_html=True)
-    st.markdown("Transform your tabular data into graph representations using advanced LLMs")
+    st.markdown('<div class="main-header">🔗 AutoG: Automatic Table-to-Graph Generation</div>', unsafe_allow_html=True)
+    st.markdown("Transform your tabular data into graph representations using advanced LLMs.")
     
     # Sidebar configuration
     config = render_sidebar()
@@ -1598,6 +1615,9 @@ def main():
         
         # Results section
         render_results()
+
+        # Round execution details shown below results after processing
+        render_move_based_logs()
     
     with col2:
         # Data upload section with integrated preview
@@ -1646,7 +1666,7 @@ def main():
             if has_results:
                 st.success("✅ Processing completed successfully. You can run again with different settings.")
             else:
-                st.success("🎉 All requirements met! Ready to start AutoG2 processing.")
+                st.success("🎉 All requirements met! Ready to start AutoG processing.")
         else:
             missing_items = []
             if not has_data:
@@ -1657,7 +1677,7 @@ def main():
                 missing_items.append("wait for current processing to complete")
             
             if missing_items:
-                st.warning(f"⚠️ Please {' and '.join(missing_items)} before running AutoG2.")
+                st.warning(f"⚠️ Please {' and '.join(missing_items)} before running AutoG.")
         
         st.markdown("---")
         
