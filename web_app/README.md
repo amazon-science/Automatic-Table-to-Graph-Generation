@@ -1,7 +1,7 @@
 
 # AutoG Web Demo
 
-A Streamlit web application for running AutoG with in-memory data processing.
+A Streamlit web application for running AutoG (Automatic Table-to-Graph Generation) with in-memory data processing.
 
 📄 **Paper**: [AutoG: Towards automatic graph construction from tabular data](https://arxiv.org/abs/2501.15282)
 
@@ -50,12 +50,20 @@ streamlit run AutoGS_WebApp.py
 ## Usage Steps
 
 1. **Choose Data Source**: 
-   - Upload your own files
+   - **Upload your own files** - Supports multiple file formats:
+     - **CSV Files**: `.csv` (comma-separated values)
+     - **TSV Files**: `.tsv`, `.tab` (tab-separated values)
+     - **Text Files**: `.txt`, `.dat` (auto-detects delimiter, fallback to comma)
+     - **Parquet Files**: `.parquet`, `.pq`, `.pqt` (Apache Parquet format)
+     - **NumPy Files**: `.npy`, `.npz` (NumPy array format)
+   - **Multiple files supported**: Upload multiple tables at once
+   - **Automatic deduplication**: Duplicate filenames are automatically handled
+   - **File size**: Large files are supported, memory usage is displayed for each dataset
 2. **Configure Processing**:
    - Select LLM model (Sonnet 4 recommended)
    - Choose AutoG method (autog-s)
    - Select dataset type and task, or use custom task description
-3. **Process**: Click "Run AutoG" and wait for completion
+3. **Process**: Click "Run AutoG" button and wait for completion
 4. **View Results**: 
    - **Schema Diagram**: Visualization of your data relationships
    - **Data Analysis**: Detailed analysis of your dataset
@@ -73,7 +81,8 @@ streamlit run AutoGS_WebApp.py
 3. **Memory Issues**: Large datasets may require more RAM
 4. **Path Issues**: Ensure you're running from the correct directory (web_app/)
 5. **Sample Data Not Loading**: Make sure you're running from the AutoG root directory
-6. **File Upload Issues**: Check file format (CSV, TSV, TXT, Parquet, NPY, NPZ) and size limits
+6. **File Upload Issues**: Ensure your files are in supported formats:
+   - **Supported**: CSV (.csv), TSV (.tsv, .tab), Text (.txt, .dat), Parquet (.parquet, .pq, .pqt), NumPy (.npy, .npz)
 
 
 ## Generated Files
