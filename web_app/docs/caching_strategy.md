@@ -1,8 +1,8 @@
-# AutoG2 Web App - Caching Strategy
+# AutoG-S Web App - Caching Strategy
 
 ## Overview
 
-The AutoG2 web app uses an intelligent hybrid caching strategy to optimize performance and memory usage for intermediate files generated during processing.
+The AutoG-S web app uses an intelligent hybrid caching strategy to optimize performance and memory usage for intermediate files generated during processing.
 
 ## File Categories
 

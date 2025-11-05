@@ -142,7 +142,7 @@ st.markdown("""
     }
     
     /* Enhanced Run AutoG Button Styling */
-    .stButton > button[key="run_autog2_main_btn"] {
+    .stButton > button[key="run_autogs_main_btn"] {
         font-size: 1.2rem !important;
         font-weight: bold !important;
         padding: 0.75rem 2rem !important;
@@ -151,13 +151,13 @@ st.markdown("""
         transition: all 0.3s ease !important;
     }
     
-    .stButton > button[key="run_autog2_main_btn"]:hover {
+    .stButton > button[key="run_autogs_main_btn"]:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
     }
     
     /* Center the button container */
-    div[data-testid="column"]:has(button[key="run_autog2_main_btn"]) {
+    div[data-testid="column"]:has(button[key="run_autogs_main_btn"]) {
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
@@ -680,7 +680,7 @@ def render_processing_section(config: TaskConfig):
             type="primary",
             disabled=not ready_to_run,
             help=help_text,
-            key="run_autog2_main_btn",
+            key="run_autogs_main_btn",
             use_container_width=True
         )
     
@@ -736,7 +736,7 @@ def render_processing_section(config: TaskConfig):
         
         # Update progress indicators based on current state
         if task_running:
-            # During processing - these will be updated by run_autog2
+            # During processing - these will be updated by run_autogs
             current_round = st.session_state.get('current_round', 0)
             rounds_completed = st.session_state.get('rounds_completed', 0)
             
@@ -770,14 +770,14 @@ def render_processing_section(config: TaskConfig):
         if task_running and not st.session_state.get('processing_started', False):
             # Mark that processing has started to avoid re-triggering
             st.session_state.processing_started = True
-            # Store progress indicators in session state so run_autog2 can update them
+            # Store progress indicators in session state so run_autogs can update them
             st.session_state.progress_indicators = {
                 'round_display': round_display,
                 'progress_bar': progress_bar,
                 'status_indicator': status_indicator,
                 'status_text': status_text
             }
-            run_autog2(config)
+            run_autogs(config)
         
         # Show logs section
         # st.markdown("---")
@@ -1164,7 +1164,7 @@ def add_log_entry(message: str, round_num: int = None):
         # If logging fails, don't crash the app
         pass
 
-def run_autog2(config: TaskConfig):
+def run_autogs(config: TaskConfig):
     """Run AutoG processing with real round tracking and logging"""
     # task_running is already set to True before this function is called
     st.session_state.stop_requested = False
@@ -1339,7 +1339,7 @@ def run_autog2(config: TaskConfig):
         if config.use_custom_task and config.custom_task and config.custom_task.strip():
             custom_desc = config.custom_task
         
-        agent_history, analysis_result, output_path, generated_files = service.run_autog2(
+        agent_history, analysis_result, output_path, generated_files = service.run_autogs(
             dataframes=st.session_state.dataframes,
             llm_name=config.llm_model,
             method=method_param,  # Use validated method parameter

@@ -1,6 +1,6 @@
 """
-Simplified AutoG2 Service for Web App
-Handles the core AutoG2 functionality with better error handling
+Simplified AutoG-S Service for Web App
+Handles the core AutoG-S functionality with better error handling
 """
 
 import os
@@ -91,7 +91,7 @@ class OutputCapture:
 
 
 class SimpleAutoGService:
-    """Simplified AutoG2 service for web app"""
+    """Simplified AutoG-S service for web app"""
     
     def __init__(self, cache_strategy="hybrid"):
         self.temp_dir = None
@@ -180,7 +180,7 @@ class SimpleAutoGService:
     
     def create_temp_workspace(self, dataframes: Dict[str, pd.DataFrame], dataset_name: str) -> str:
         """Create temporary workspace"""
-        self.temp_dir = tempfile.mkdtemp(prefix="autog2_webapp_")
+        self.temp_dir = tempfile.mkdtemp(prefix="autogs_webapp_")
         data_dir = os.path.join(self.temp_dir, "data")
         os.makedirs(data_dir, exist_ok=True)
         
@@ -230,7 +230,7 @@ class SimpleAutoGService:
         
         return meta_dict
     
-    def run_autog2(
+    def run_autogs(
         self,
         dataframes: Dict[str, pd.DataFrame],
         llm_name: str = "sonnet3",
@@ -243,7 +243,7 @@ class SimpleAutoGService:
         custom_task_description: str = None
     ) -> Tuple[str, str, str, Dict[str, str]]:
         """
-        Run AutoG2 processing
+        Run AutoG-S processing
         
         Args:
             dataframes: Dictionary of table name to DataFrame
@@ -368,7 +368,7 @@ class SimpleAutoGService:
             
             # Run agent with real-time output capture
             if progress_callback:
-                progress_callback("Starting AutoG2 agent...")
+                progress_callback("Starting AutoG-S agent...")
             
             # Create output capture with callback
             def output_handler(text: str):
@@ -394,7 +394,7 @@ class SimpleAutoGService:
                         round_count = max(round_count, round_num + 1)  # +1 because rounds are 0-indexed
                 
                 if round_count > 0:
-                    progress_callback(f"AutoG2 completed {round_count} rounds total")
+                    progress_callback(f"AutoG-S completed {round_count} rounds total")
             
             # Save agent history
             final_path = os.path.join(autog_path, "final")
@@ -413,7 +413,7 @@ class SimpleAutoGService:
             return agent_history, analysis_result, autog_path, generated_files
             
         except Exception as e:
-            raise Exception(f"AutoG2 execution failed: {str(e)}")
+            raise Exception(f"AutoG-S execution failed: {str(e)}")
     
     def _generate_training_metainfo(self, data: DBBRDBDataset, meta_dict: Dict[str, Any], task: str) -> Dict[str, Any]:
         """Generate training metadata"""

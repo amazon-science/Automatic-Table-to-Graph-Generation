@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test runner for all AutoG2 Web App unit tests
+Test runner for all AutoG-S Web App unit tests
 """
 
 import sys
@@ -10,7 +10,7 @@ from pathlib import Path
 def run_all_tests():
     """Run all available unit tests"""
     
-    print("🧪 AutoG2 Web App - Unit Test Suite")
+    print("🧪 AutoG-S Web App - Unit Test Suite")
     print("=" * 60)
     
     # Get the current directory

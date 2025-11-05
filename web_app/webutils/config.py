@@ -1,10 +1,10 @@
 
 """
-Configuration settings for AutoG2 Web App
-Based on the actual AutoG2 backend pipeline
+Configuration settings for AutoG-S Web App
+Based on the actual AutoG-S backend pipeline
 """
 
-# LLM Model Configurations (matching main.autog2 exactly)
+# LLM Model Configurations (matching main.autog_s exactly)
 LLM_MODELS = {
     "sonnet4": {
         "name": "Claude Sonnet 4",
@@ -57,7 +57,7 @@ LLM_MODELS = {
 AUTOG_CONFIG = {
     "methods": [
         "autog-s",  # AutoG-S directly adopts the final output state
-        "autog-a"  # AutoG-A uses an oracle to select the state
+        "autog-a (not implemented yet)"  # AutoG-A uses an oracle to select the state
     ],
     "datasets": {
         "avs": [

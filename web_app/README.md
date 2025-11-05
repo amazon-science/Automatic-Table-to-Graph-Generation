@@ -14,13 +14,14 @@ A Streamlit web application for running AutoG with in-memory data processing.
 # From the root directory (Automatic-Table-to-Graph-Generation)
 bash multi-table-benchmark/conda/create_conda_env.sh -c -p 3.9 -t 2.1
 conda activate autog-cpu
-export PYTHONPATH=$(pwd)/multi-table-benchmark:$PYTHONPATH
+export PYTHONPATH=$(pwd)/multi-table-benchmark
 ```
 
 **Note**: The PYTHONPATH export is required for the backend imports to work correctly.
 
 2. **AWS Credentials**: You'll need AWS Bedrock access for LLM models:
    - Set environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`
+   - **Detailed setup guide**: See [AWS_SETUP.md](AWS_SETUP.md) for comprehensive instructions
 
 ```bash
 export AWS_DEFAULT_REGION="<your-region>"
@@ -34,16 +35,16 @@ export AWS_SECRET_ACCESS_KEY="<your-secret-key>"
 #### Option 1: Using the startup script (Recommended)
 ```bash
 cd web_app
-python run_autog2_webapp.py
+python run_autogs_webapp.py
 ```
 
 #### Option 2: Direct Streamlit command
 If you prefer to run Streamlit directly, you'll need to set the PYTHONPATH for all required modulesst:
 ```bash
 # From the root directory (Automatic-Table-to-Graph-Generation)
-export PYTHONPATH=$(pwd):$(pwd)/multi-table-benchmark:$(pwd)/dbinfer:$(pwd)/models:$(pwd)/prompts:$(pwd)/web_app:$PYTHONPATH
+export PYTHONPATH=$(pwd):$(pwd)/multi-table-benchmark:$(pwd)/dbinfer:$(pwd)/models:$(pwd)/prompts:$(pwd)/web_app
 cd web_app
-streamlit run AutoG2_WebApp.py
+streamlit run AutoGS_WebApp.py
 ```
 
 ## Usage Steps
@@ -67,7 +68,7 @@ streamlit run AutoG2_WebApp.py
 ## Troubleshooting
 
 1. **Import Errors**: Make sure you're in the `autog-cpu` conda environment and PYTHONPATH is set correctly
-   - **Required**: From root directory, run `export PYTHONPATH=$(pwd)/multi-table-benchmark:$PYTHONPATH`
+   - **Required**: From root directory, run `export PYTHONPATH=$(pwd)/multi-table-benchmark`
 2. **AWS Errors**: Verify your AWS credentials and Bedrock access
 3. **Memory Issues**: Large datasets may require more RAM
 4. **Path Issues**: Ensure you're running from the correct directory (web_app/)

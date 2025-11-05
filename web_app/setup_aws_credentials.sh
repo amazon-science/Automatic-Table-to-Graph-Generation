@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# AutoG2 AWS Credentials Setup Script
-# This script helps you set up AWS credentials for the AutoG2 web app
+# AutoG-S AWS Credentials Setup Script
+# This script helps you set up AWS credentials for the AutoG-S web app
 
-echo "🔗 AutoG2 AWS Credentials Setup"
+echo "🔗 AutoG-S AWS Credentials Setup"
 echo "================================"
 echo
 
@@ -57,9 +57,9 @@ if aws sts get-caller-identity &> /dev/null; then
     echo "Account information:"
     aws sts get-caller-identity --output table
     echo
-    echo "🚀 You can now run the AutoG2 web app:"
+    echo "🚀 You can now run the AutoG-S web app:"
     echo "   cd web_app"
-    echo "   python run_autog2_webapp.py"
+    echo "   python run_autogs_webapp.py"
 else
     echo "❌ AWS credentials test failed"
     echo

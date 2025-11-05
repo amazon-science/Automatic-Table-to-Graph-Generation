@@ -1,7 +1,7 @@
-# AWS Credentials Setup for AutoG2 Web App
+# AWS Credentials Setup for AutoG-S Web App
 
 ## Overview
-The AutoG2 web app requires AWS credentials to access AWS Bedrock for LLM processing. For security reasons, credentials should be set up in your terminal environment before running the web app.
+The AutoG-S web app requires AWS credentials to access AWS Bedrock for LLM processing. For security reasons, credentials should be set up in your terminal environment before running the web app.
 
 ## Setup Methods
 
@@ -57,7 +57,7 @@ chmod +x setup_aws_credentials.sh
 
 ## Required Permissions
 
-Your AWS credentials need the following permissions for AutoG2:
+Your AWS credentials need the following permissions for AutoG-S:
 
 - `bedrock:InvokeModel` - To call LLM models
 - Access to specific Bedrock models:
@@ -71,7 +71,7 @@ Once your AWS credentials are configured:
 
 ```bash
 cd web_app
-python run_autog2_webapp.py
+python run_autogs_webapp.py
 ```
 
 The web app will automatically detect and validate your AWS credentials.

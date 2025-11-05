@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Runner script for AutoG2 Web Application
+Runner script for AutoG-S Web Application
 """
 
 import os
@@ -10,8 +10,8 @@ import argparse
 from pathlib import Path
 
 def main():
-    """Run the AutoG2 web application"""
-    parser = argparse.ArgumentParser(description="Run AutoG2 Web Application")
+    """Run the AutoG-S web application"""
+    parser = argparse.ArgumentParser(description="Run AutoG-S Web Application")
     parser.add_argument("--port", type=int, default=8501, help="Port to run on (default: 8501)")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)")
     parser.add_argument("--theme", type=str, choices=["light", "dark"], help="Streamlit theme")
@@ -20,7 +20,7 @@ def main():
     
     # Get the web app file path
     current_dir = Path(__file__).parent
-    webapp_path = current_dir / "AutoG2_WebApp.py"
+    webapp_path = current_dir / "AutoGS_WebApp.py"
     
     if not webapp_path.exists():
         print(f"Error: {webapp_path} not found!")
@@ -61,11 +61,11 @@ def main():
         cmd.append(f"--theme.base={args.theme}")
     
     try:
-        print(f"🚀 Starting AutoG2 Web App on http://{args.host}:{args.port}")
+        print(f"🚀 Starting AutoG-S Web App on http://{args.host}:{args.port}")
         print("   Press Ctrl+C to stop")
         subprocess.run(cmd, check=True)
     except KeyboardInterrupt:
-        print("\\n👋 Shutting down AutoG2 Web App...")
+        print("\\n👋 Shutting down AutoG-S Web App...")
     except Exception as e:
         print(f"❌ Error running web app: {e}")
         sys.exit(1)
