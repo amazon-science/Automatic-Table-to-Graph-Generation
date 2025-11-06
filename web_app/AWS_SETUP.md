@@ -39,9 +39,9 @@ The AutoG-S web app requires AWS credentials to access AWS Bedrock for LLM proce
 Set the following environment variables in your terminal:
 
 ```bash
-export AWS_ACCESS_KEY_ID=your_access_key_here
-export AWS_SECRET_ACCESS_KEY=your_secret_key_here
-export AWS_SESSION_TOKEN=your_session_token_here  # Optional for temporary credentials
+export AWS_ACCESS_KEY_ID=<your_access_key_here>
+export AWS_SECRET_ACCESS_KEY=<your_secret_key_here>
+export AWS_SESSION_TOKEN=<your_session_token_here>  # Optional for temporary credentials
 export AWS_DEFAULT_REGION=us-west-2
 ```
 

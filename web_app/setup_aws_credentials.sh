@@ -39,9 +39,9 @@ else
     echo
     echo "Alternatively, you can set environment variables manually:"
     echo
-    echo "export AWS_ACCESS_KEY_ID=your_access_key_here"
-    echo "export AWS_SECRET_ACCESS_KEY=your_secret_key_here"
-    echo "export AWS_SESSION_TOKEN=your_session_token_here  # Optional for temporary credentials"
+    echo "export AWS_ACCESS_KEY_ID=<your_access_key_here>"
+    echo "export AWS_SECRET_ACCESS_KEY=<your_secret_key_here>"
+    echo "export AWS_SESSION_TOKEN=<your_session_token_here>  # Optional for temporary credentials"
     echo "export AWS_DEFAULT_REGION=us-west-2"
     echo
     exit 1
