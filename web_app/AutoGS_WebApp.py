@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AutoG Web Application
+AutoG-S Web Application
 Clean, simplified interface for Automatic Table-to-Graph Generation
 """
 
@@ -38,12 +38,12 @@ for path in paths_to_add:
     if path not in sys.path:
         sys.path.insert(0, path)
 
-# Import AutoG components
+# Import AutoG-S components
 try:
     from services.simple_autog_service import SimpleAutoGService
     from webutils.config import LLM_MODELS, AUTOG_CONFIG, DEFAULT_CONFIG
 except ImportError as e:
-    st.error(f"Failed to import AutoG components: {e}")
+    st.error(f"Failed to import AutoG-S components: {e}")
     st.error("Make sure you're running from the correct directory with all dependencies installed.")
     st.stop()
 
@@ -52,7 +52,7 @@ load_dotenv()
 
 # Page configuration
 st.set_page_config(
-    page_title="AutoG - Automatic Table-to-Graph Generation",
+    page_title="AutoG-S - Automatic Table-to-Graph Generation",
     page_icon="🔗",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -141,7 +141,7 @@ st.markdown("""
         font-weight: bold;
     }
     
-    /* Enhanced Run AutoG Button Styling */
+    /* Enhanced Run AutoG-S Button Styling */
     .stButton > button[key="run_autogs_main_btn"] {
         font-size: 1.2rem !important;
         font-weight: bold !important;
@@ -184,7 +184,7 @@ class TaskConfig:
             self.method = "autog-s"  # Default fallback
         
         # Ensure method is valid
-        valid_methods = ["autog-s", "autog-a"]
+        valid_methods = ["autog-s"]
         if self.method not in valid_methods:
             self.method = "autog-s"
 
@@ -257,9 +257,8 @@ def load_file_to_dataframe(uploaded_file) -> Optional[pd.DataFrame]:
 def render_sidebar():
     """Render sidebar configuration"""
     with st.sidebar:
-        # st.markdown("## 🔗 AutoG Configuration")
         
-        # Check if AutoG is currently running
+        # Check if AutoG-S is currently running
         task_running = st.session_state.get('task_running', False)
         
         # AWS Credentials Section
@@ -277,7 +276,7 @@ def render_sidebar():
             st.session_state.aws_credentials_valid = True
             
             # Show masked credential info
-            st.info(f"🔑 Access Key: `{aws_access_key[:8]}...` | Region: `{aws_region}`")
+            st.info(f"🔑 Access Key: `{aws_access_key[:-4]}...` | Region: `{aws_region}`")
             if aws_session_token:
                 st.info("🔑 Session token present (temporary credentials)")
         else:
@@ -285,10 +284,10 @@ def render_sidebar():
             st.session_state.aws_credentials_valid = False
             st.markdown("Please export your AWS credentials before running the web app:")
             st.code("""
-export AWS_ACCESS_KEY_ID=your_access_key_here
-export AWS_SECRET_ACCESS_KEY=your_secret_key_here
-export AWS_SESSION_TOKEN=your_session_token_here  # Optional
-export AWS_DEFAULT_REGION=us-west-2
+export AWS_ACCESS_KEY_ID=<your_access_key_here>
+export AWS_SECRET_ACCESS_KEY=<your_secret_key_here>
+export AWS_SESSION_TOKEN=<your_session_token_here>  # Optional
+export AWS_DEFAULT_REGION=<your_default_region>
             """, language="bash")
         
         st.markdown("---")
@@ -302,7 +301,7 @@ export AWS_DEFAULT_REGION=us-west-2
             "LLM Model",
             options=list(LLM_MODELS.keys()),
             index=list(LLM_MODELS.keys()).index(DEFAULT_CONFIG["llm_model"]),
-            help="Select the language model for AutoG processing",
+            help="Select the language model for AutoG-S processing",
             disabled=task_running,
             key=f"llm_model_{widget_counter}"
         )
@@ -321,7 +320,7 @@ export AWS_DEFAULT_REGION=us-west-2
             "Method",
             options=AUTOG_CONFIG["methods"],
             index=default_method_index,
-            help="AutoG processing method",
+            help="AutoG-S processing method",
             disabled=task_running,
             key=f"method_{widget_counter}"
         )
@@ -364,7 +363,7 @@ export AWS_DEFAULT_REGION=us-west-2
             custom_task = st.text_area(
                 "Custom Task Description",
                 placeholder="Describe your custom task here...",
-                help="Provide a detailed description of your custom task",
+                help="Provide a detailed description of your custom task. E.g., 'This task is to find the primary keys and foreign keys among the given tables.'",
                 disabled=task_running,
                 key=f"custom_task_{widget_counter}"
             )
@@ -390,7 +389,7 @@ export AWS_DEFAULT_REGION=us-west-2
                 min_value=1,
                 max_value=50,
                 value=20,
-                help="Maximum number of processing rounds for AutoG agent",
+                help="Maximum number of processing rounds for AutoG-S agent",
                 disabled=task_running,
                 key=f"max_rounds_{widget_counter}"
             )
@@ -598,7 +597,7 @@ def render_data_preview():
 
 def render_processing_section(config: TaskConfig):
     """Render processing section"""
-    st.markdown('<div class="section-header">🚀 AutoG Processing Center</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">🚀 AutoG-S Processing Center</div>', unsafe_allow_html=True)
     
     # Configuration summary in a clean format
     with st.expander("📋 Current Configuration", expanded=False):
@@ -645,7 +644,7 @@ def render_processing_section(config: TaskConfig):
     with col2:
         # Create detailed help text for debugging
         if ready_to_run:
-            help_text = "Click to start AutoG table-to-graph generation"
+            help_text = "Click to start -S table-to-graph generation"
         else:
             missing = []
             if not has_data:
@@ -657,7 +656,7 @@ def render_processing_section(config: TaskConfig):
             help_text = f"Missing: {', '.join(missing)}"
         
         run_button = st.button(
-            "🚀 **RUN AUTOG**",
+            "🚀 **RUN AUTOG-S**",
             type="primary",
             disabled=not ready_to_run,
             help=help_text,
@@ -673,13 +672,13 @@ def render_processing_section(config: TaskConfig):
         st.info("💡 This will analyze your data and generate a graph schema using AI.")
         # Show warning for custom task without description (but don't disable)
         if config.use_custom_task and not custom_task_has_description:
-            st.warning("⚠️ Custom task is enabled but no description provided. AutoG will use the default task behavior.")
+            st.warning("⚠️ Custom task is enabled but no description provided. AutoG-S will use the default task behavior.")
     elif st.session_state.get('task_running', False):
-        st.info("🔄 AutoG is currently processing. Please wait for completion or stop the process above.")
+        st.info("🔄 AutoG-S is currently processing. Please wait for completion or stop the process above.")
     else:
         st.warning("⚠️ Button will be enabled when all requirements are met.")
     
-    # Process AutoG when button is clicked
+    # Process AutoG-S when button is clicked
     if run_button:
         # Set task_running immediately to disable configuration
         st.session_state.task_running = True
@@ -715,12 +714,12 @@ def render_processing_section(config: TaskConfig):
                 round_display.metric("Current Progress", f"Round {current_round}")
                 progress_bar.progress(min(8 + (current_round * 10), 90))
                 status_indicator.info("🔄 Running")
-                status_text.text(f"🚀 AutoG agent: Round {current_round}")
+                status_text.text(f"🚀 AutoG-S agent: Round {current_round}")
             else:
                 round_display.metric("Current Progress", "Starting...")
                 progress_bar.progress(8)
                 status_indicator.info("🔄 Initializing")
-                status_text.text("🔄 Initializing AutoG...")
+                status_text.text("🔄 Initializing AutoG-S...")
 
              # show move execution details
             round_logs = st.session_state.get('round_logs', {})
@@ -856,7 +855,7 @@ def show_current_logs(cur_logs, round_completed):
 
 
 def render_move_based_logs():
-    """Render move-based logs integrated into the AutoG Agent Running section"""
+    """Render move-based logs integrated into the AutoG-S Agent Running section"""
     round_logs = st.session_state.get('round_logs', {})
     
     if not round_logs:
@@ -1014,7 +1013,7 @@ def add_log_entry(message: str, round_num: int = None):
         pass
 
 def run_autogs(config: TaskConfig):
-    """Run AutoG processing with real round tracking and logging"""
+    """Run AutoG-S processing with real round tracking and logging"""
     # task_running is already set to True before this function is called
     st.session_state.stop_requested = False
     
@@ -1036,7 +1035,7 @@ def run_autogs(config: TaskConfig):
     status_text = progress_indicators.get('status_text')
     
     try:
-        add_log_entry("Starting AutoG processing...")
+        add_log_entry("Starting -S processing...")
         
         # Debug: Check if autog_service exists
         if 'autog_service' not in st.session_state:
@@ -1052,14 +1051,14 @@ def run_autogs(config: TaskConfig):
         # Check if backend is available
         from services.simple_autog_service import BACKEND_AVAILABLE
         if not BACKEND_AVAILABLE:
-            raise ImportError("AutoG backend modules are not available. Please check your environment setup.")
+            raise ImportError("AutoG-S backend modules are not available. Please check your environment setup.")
         
         # Initial setup
-        add_log_entry("Initializing AutoG system...")
+        add_log_entry("Initializing AutoG-S system...")
         if status_indicator:
             status_indicator.info("🔄 Initializing")
         if status_text:
-            status_text.text("🔄 Initializing AutoG and preparing data...")
+            status_text.text("🔄 Initializing AutoG-S and preparing data...")
         if round_display:
             round_display.metric("Current Progress", "Setup")
         if progress_bar:
@@ -1077,28 +1076,28 @@ def run_autogs(config: TaskConfig):
             config.method = "autog-s"  # Force to valid default
         
         # Ensure method is in valid list
-        valid_methods = ["autog-s", "autog-a"]
+        valid_methods = ["autog-s"]
         if config.method not in valid_methods:
             add_log_entry(f"WARNING: Unknown method '{config.method}', using 'autog-s'")
             config.method = "autog-s"
         
-        # Start AutoG processing - show preparing state
+        # Start AutoG-S processing - show preparing state
         if status_indicator:
             status_indicator.warning("🚀 Running")
         if status_text:
-            status_text.text("🚀 Starting AutoG agent...")
+            status_text.text("🚀 Starting AutoG-S agent...")
         if round_display:
             round_display.metric("Current Progress", "Starting...")
         if progress_bar:
             progress_bar.progress(8)
         
-        add_log_entry("Starting AutoG agent execution...")
+        add_log_entry("Starting AutoG-S agent execution...")
         
         # Define progress callback to update UI and logs
         def progress_callback(message):
             import re
             
-            # Parse different types of AutoG output
+            # Parse different types of AutoG-S output
             round_match = re.search(r'Round:\s*(\d+)', message)
             move_match = re.search(r'Move:\s*(.+)', message)
             error_match = re.search(r'Error:\s*(.+)', message)
@@ -1112,7 +1111,7 @@ def run_autogs(config: TaskConfig):
                 if round_display:
                     round_display.metric("Current Progress", f"Round {current_round_num + 1}")
                 if status_text:
-                    status_text.text(f"🚀 AutoG agent: Round {current_round_num + 1}")
+                    status_text.text(f"🚀 AutoG-S agent: Round {current_round_num + 1}")
                 if progress_bar:
                     progress_bar.progress(min(8 + ((current_round_num + 1) * 10), 90))
                 
@@ -1138,15 +1137,15 @@ def run_autogs(config: TaskConfig):
                 
             elif "No more action can be taken" in message:
                 # Completion message
-                add_log_entry("✅ AutoG completed successfully - no more actions needed")
+                add_log_entry("✅ AutoG-S completed successfully - no more actions needed")
                 if status_text:
-                    status_text.text("✅ AutoG processing completed")
+                    status_text.text("✅ AutoG-S processing completed")
                 
             elif "Too many errors" in message:
                 # Error termination
-                add_log_entry("❌ AutoG stopped due to too many errors")
+                add_log_entry("❌ AutoG-S stopped due to too many errors")
                 if status_text:
-                    status_text.text("❌ AutoG stopped due to errors")
+                    status_text.text("❌ AutoG-S stopped due to errors")
                 
             else:
                 # General message
@@ -1156,8 +1155,8 @@ def run_autogs(config: TaskConfig):
             
             return True  # Continue processing
             
-        # Run the actual AutoG processing with progress callback
-        add_log_entry("Executing AutoG processing pipeline...")
+        # Run the actual AutoG-S processing with progress callback
+        add_log_entry("Executing AutoG-S processing pipeline...")
         
         # Final method validation before service call
         if config.method is None or config.method == "None" or str(config.method).strip() == "":
@@ -1219,7 +1218,7 @@ def run_autogs(config: TaskConfig):
             # Check if hit max rounds
             if any(phrase in agent_history.lower() for phrase in ['maximum', 'max', 'limit', 'threshold']):
                 hit_max_rounds = True
-                add_log_entry(f"AutoG reached maximum rounds limit ({config.max_rounds})")
+                add_log_entry(f"AutoG-S reached maximum rounds limit ({config.max_rounds})")
         
         # Use the current round from real-time tracking
         st.session_state.rounds_completed = actual_rounds-1 if actual_rounds > 0 else 1
@@ -1235,7 +1234,7 @@ def run_autogs(config: TaskConfig):
         if progress_bar:
             progress_bar.progress(100)  # Set progress bar to 100%
         
-        add_log_entry("AutoG processing completed successfully!")
+        add_log_entry("AutoG-S processing completed successfully!")
         add_log_entry(f"Generated {len(generated_files)} output files")
         
         # Store results in session state
@@ -1261,7 +1260,7 @@ def run_autogs(config: TaskConfig):
     except Exception as e:
         if status_indicator:
             status_indicator.error("❌ Failed")
-        error_msg = f"AutoG processing failed: {str(e)}"
+        error_msg = f"AutoG-S processing failed: {str(e)}"
         st.error(f"❌ {error_msg}")
         add_log_entry(f"ERROR: {error_msg}")
         
@@ -1275,7 +1274,7 @@ def run_autogs(config: TaskConfig):
             st.markdown("**Troubleshooting Tips:**")
             st.markdown("- Ensure you're running in the `autog-cpu` conda environment")
             st.markdown("- Check that AWS credentials are valid and have Bedrock access")
-            st.markdown("- Verify that all AutoG dependencies are installed")
+            st.markdown("- Verify that all AutoG-S dependencies are installed")
             st.markdown("- Try with a simpler dataset or different task")
             
     finally:
@@ -1354,7 +1353,7 @@ def render_results():
         )
     
     with tab3:
-        st.markdown("### AutoG Agent Processing History")
+        st.markdown("### AutoG-S Agent Processing History")
         st.text_area(
             "Agent History",
             value=results['agent_history'],
@@ -1446,17 +1445,17 @@ def main():
     SessionState.init()
     
     # Header
-    st.markdown('<div class="main-header">🔗 AutoG: Automatic Table-to-Graph Generation</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">🔗 AutoG-S: Automatic Table-to-Graph Generation</div>', unsafe_allow_html=True)
     st.markdown("Transform your tabular data into graph representations using advanced LLMs.")
     
     # Sidebar configuration
     config = render_sidebar()
     
-    # Main layout: Left for AutoG processing and results, Right for data management
+    # Main layout: Left for AutoG-S processing and results, Right for data management
     col1, col2 = st.columns([3, 2])
     
     with col1:
-        # AutoG Processing section
+        # AutoG-S Processing section
         render_processing_section(config)
         
         # Results section
@@ -1512,7 +1511,7 @@ def main():
             if has_results:
                 st.success("✅ Processing completed successfully. You can run again with different settings.")
             else:
-                st.success("🎉 All requirements met! Ready to start AutoG processing.")
+                st.success("🎉 All requirements met! Ready to start AutoG-S processing.")
         else:
             missing_items = []
             if not has_data:
@@ -1523,7 +1522,7 @@ def main():
                 missing_items.append("wait for current processing to complete")
             
             if missing_items:
-                st.warning(f"⚠️ Please {' and '.join(missing_items)} before running AutoG.")
+                st.warning(f"⚠️ Please {' and '.join(missing_items)} before running AutoG-S.")
         
         st.markdown("---")
         

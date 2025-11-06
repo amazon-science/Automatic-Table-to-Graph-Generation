@@ -4,65 +4,56 @@ Configuration settings for AutoG-S Web App
 Based on the actual AutoG-S backend pipeline
 """
 
-# LLM Model Configurations (matching main.autog_s exactly)
+# LLM Configuration Constants
+CONTEXT_SIZE = 65536
+OUTPUT_SIZE = 65536
+
+# LLM Model Configurations
 LLM_MODELS = {
     "sonnet4": {
         "name": "Claude Sonnet 4",
         "model_id": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0",
-        "description": "Latest Claude Sonnet 4 model for advanced reasoning"
-    },
-    "sonnet37": {
-        "name": "Claude 3.7 Sonnet",
-        "model_id": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "description": "Enhanced Claude 3 Sonnet with improved capabilities"
-    },
-    "sonnet3": {
-        "name": "Claude 3 Sonnet",
-        "model_id": "anthropic.claude-3-sonnet-20240229-v1:0",
-        "description": "Reliable model for table analysis and relationship extraction"
+        "description": "Latest Claude Sonnet 4 model for advanced reasoning",
+        "context_size": CONTEXT_SIZE,
+        "output_size": OUTPUT_SIZE
     },
     "llama3": {
         "name": "Llama 3 70B",
         "model_id": "meta.llama3-70b-instruct-v1:0",
-        "description": "Open-source model with strong performance"
+        "description": "Open-source model with strong performance",
+        "context_size": CONTEXT_SIZE,
+        "output_size": OUTPUT_SIZE
     },
     "mistralarge": {
         "name": "Mistral Large",
         "model_id": "mistral.mistral-large-2402-v1:0",
-        "description": "High-performance multilingual model"
-    },
-    "opus3": {
-        "name": "Claude 3 Opus",
-        "model_id": "anthropic.claude-3-opus-20240229-v1:0",
-        "description": "Most capable Claude 3 model for complex tasks"
-    },
-    "opus4": {
-        "name": "Claude Opus 4",
-        "model_id": "anthropic.claude-opus-4-20250514-v1:0",
-        "description": "Latest Claude Opus 4 model with maximum capabilities"
-    },
-    "haiku3": {
-        "name": "Claude 3 Haiku",
-        "model_id": "anthropic.claude-3-haiku-20240229-v1:0",
-        "description": "Fast and efficient model for simpler analysis tasks"
+        "description": "High-performance multilingual model",
+        "context_size": CONTEXT_SIZE,
+        "output_size": OUTPUT_SIZE
     },
     "sonnet45": {
         "name": "Claude Sonnet 4.5",
         "model_id": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "description": "Latest Claude Sonnet 4.5 with enhanced performance"
+        "description": "Latest Claude Sonnet 4.5 with enhanced performance",
+        "context_size": CONTEXT_SIZE,
+        "output_size": OUTPUT_SIZE
     }
 }
 
 # AutoG Configuration (matching actual task definitions)
 AUTOG_CONFIG = {
     "methods": [
-        "autog-s",  # AutoG-S directly adopts the final output state
-        "autog-a (not implemented yet)"  # AutoG-A uses an oracle to select the state
+        "autog-s"  # AutoG-S directly adopts the final output state (only method supported in web app)
     ],
     "datasets": {
         "avs": [
             "repeater"  # Predict repeat purchases
         ],
+        "custom": [
+            "relation", # Find primary/foreign keys
+            "kg",       # Knowledge graph construction
+            "kg2"       # Enhanced knowledge graph construction
+        ]
         "mag": [
             "venue",    # Predict paper venue
             "year",     # Predict publication year
@@ -88,11 +79,6 @@ AUTOG_CONFIG = {
             "upvote",   # Predict post upvotes
             "churn"     # Predict user churn
         ],
-        "custom": [
-            "relation", # Find primary/foreign keys
-            "kg",       # Knowledge graph construction
-            "kg2"       # Enhanced knowledge graph construction
-        ]
     }
 }
 
@@ -100,7 +86,8 @@ AUTOG_CONFIG = {
 DEFAULT_CONFIG = {
     "llm_model": "sonnet4",
     "method": "autog-s", 
+    "datasets": "custom",
     "task": "custom:relation",
-    "seed": 0,
+    "seed": 42,
     "cache_strategy": "hybrid"
 }

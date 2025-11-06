@@ -1,7 +1,7 @@
 
-# AutoG Web Demo
+# AutoG-S Web Demo
 
-A Streamlit web application for running AutoG (Automatic Table-to-Graph Generation) with in-memory data processing.
+A Streamlit web application for running AutoG-S (Automatic Table-to-Graph Generation) with in-memory data processing.
 
 📄 **Paper**: [AutoG: Towards automatic graph construction from tabular data](https://arxiv.org/abs/2501.15282)
 
@@ -19,7 +19,7 @@ export PYTHONPATH=$(pwd)/multi-table-benchmark
 
 **Note**: The PYTHONPATH export is required for the backend imports to work correctly.
 
-2. **AWS Credentials**: You'll need AWS Bedrock access for LLM models:
+2. **AWS Credentials**: You'll need AWS Bedrock access for using LLM models:
    - Set environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`
    - **Detailed setup guide**: See [AWS_SETUP.md](AWS_SETUP.md) for comprehensive instructions
 
@@ -61,28 +61,27 @@ streamlit run AutoGS_WebApp.py
    - **File size**: Large files are supported, memory usage is displayed for each dataset
 2. **Configure Processing**:
    - Select LLM model (Sonnet 4 recommended)
-   - Choose AutoG method (autog-s)
    - Select dataset type and task, or use custom task description
-3. **Process**: Click "Run AutoG" button and wait for completion
+3. **Process**: Click "Run AutoG-S" button and wait for completion
 4. **View Results**: 
    - **Schema Diagram**: Visualization of your data relationships
    - **Data Analysis**: Detailed analysis of your dataset
    - **Agent History**: All actions taken during processing
-   - **Downloads**: Get metadata.yaml, agent_history.txt, and schema files
+   - **Downloads**: Download AutoG outputs: metadata.yaml, agent_history.txt, and schema files
 5. **Check Run Execution Details**:
-   - Check each move/action taken in each round
+   - Check each move/action log in each round
 
 
 ## Troubleshooting
 
-1. **Import Errors**: Make sure you're in the `autog-cpu` conda environment and PYTHONPATH is set correctly
-   - **Required**: From root directory, run `export PYTHONPATH=$(pwd)/multi-table-benchmark`
-2. **AWS Errors**: Verify your AWS credentials and Bedrock access
-3. **Memory Issues**: Large datasets may require more RAM
-4. **Path Issues**: Ensure you're running from the correct directory (web_app/)
-5. **Sample Data Not Loading**: Make sure you're running from the AutoG root directory
+1. **Import Errors**: Make sure you're in the `autog-cpu` conda environment and PYTHONPATH is set correctly.
+   - **Required**: From root directory, run `export PYTHONPATH=$(pwd)/multi-table-benchmark`.
+2. **AWS Errors**: Verify your AWS credentials and Bedrock access.
+3. **Memory Issues**: Large datasets may require more RAM.
+4. **Path Issues**: Ensure you're running from the correct directory (web_app/).
+5. **Sample Data Not Loading**: Make sure you're running from the AutoG root directory.
 6. **File Upload Issues**: Ensure your files are in supported formats:
-   - **Supported**: CSV (.csv), TSV (.tsv, .tab), Text (.txt, .dat), Parquet (.parquet, .pq, .pqt), NumPy (.npy, .npz)
+   - **Supported**: CSV (.csv), TSV (.tsv, .tab), Text (.txt, .dat), Parquet (.parquet, .pq, .pqt), NumPy (.npy, .npz).
 
 
 ## Generated Files

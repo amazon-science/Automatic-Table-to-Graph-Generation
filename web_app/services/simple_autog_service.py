@@ -118,58 +118,19 @@ class SimpleAutoGService:
         }
     
     def get_llm_config(self, llm_name: str) -> Dict[str, Any]:
-        """Get LLM configuration - matches webutils/config.py LLM_MODELS"""
-        CONTEXT_SIZE = 65536
-        OUTPUT_SIZE = 65536
+        """Get LLM configuration from centralized webutils/config.py"""
+        from webutils.config import LLM_MODELS, DEFAULT_CONFIG
         
-        configs = {
-            "sonnet4": {
-                "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0",
-                "context_size": CONTEXT_SIZE,
-                "output_size": OUTPUT_SIZE
-            },
-            "sonnet37": {
-                "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-                "context_size": CONTEXT_SIZE,
-                "output_size": OUTPUT_SIZE
-            },
-            "sonnet3": {
-                "model_name": "anthropic.claude-3-sonnet-20240229-v1:0",
-                "context_size": CONTEXT_SIZE,
-                "output_size": OUTPUT_SIZE
-            },
-            "llama3": {
-                "model_name": "meta.llama3-70b-instruct-v1:0",
-                "context_size": CONTEXT_SIZE,
-                "output_size": OUTPUT_SIZE
-            },
-            "mistralarge": {
-                "model_name": "mistral.mistral-large-2402-v1:0",
-                "context_size": CONTEXT_SIZE,
-                "output_size": OUTPUT_SIZE
-            },
-            "opus3": {
-                "model_name": "anthropic.claude-3-opus-20240229-v1:0",
-                "context_size": CONTEXT_SIZE,
-                "output_size": OUTPUT_SIZE
-            },
-            "opus4": {
-                "model_name": "anthropic.claude-opus-4-20250514-v1:0",
-                "context_size": CONTEXT_SIZE,
-                "output_size": OUTPUT_SIZE
-            },
-            "haiku3": {
-                "model_name": "anthropic.claude-3-haiku-20240229-v1:0",
-                "context_size": CONTEXT_SIZE,
-                "output_size": OUTPUT_SIZE
-            },
-            "sonnet45": {
-                "model_name": "arn:aws:bedrock:us-west-2:911734752298:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
-                "context_size": CONTEXT_SIZE,
-                "output_size": OUTPUT_SIZE
-            }
+        if llm_name not in LLM_MODELS:
+            print(f"WARNING: Unknown model '{llm_name}', using default '{DEFAULT_CONFIG['llm_model']}'")
+            llm_name = DEFAULT_CONFIG["llm_model"]
+        
+        model_config = LLM_MODELS[llm_name]
+        return {
+            "model_name": model_config["model_id"],
+            "context_size": model_config["context_size"],
+            "output_size": model_config["output_size"]
         }
-        return configs.get(llm_name, configs["sonnet4"])
     
     def capitalize_first_alpha(self, text: str) -> str:
         """Capitalize first alphabetic character"""
@@ -233,10 +194,10 @@ class SimpleAutoGService:
     def run_autogs(
         self,
         dataframes: Dict[str, pd.DataFrame],
-        llm_name: str = "sonnet3",
+        llm_name: str = "sonnet4",
         method: str = "autog-s",
-        task_name: str = "custom:kg",
-        dataset_name: str = "webapp_dataset",
+        task_name: str = "custom:relation",
+        dataset_name: str = "custom",
         seed: int = 0,
         max_rounds: int = 5,
         progress_callback=None,
@@ -248,9 +209,9 @@ class SimpleAutoGService:
         Args:
             dataframes: Dictionary of table name to DataFrame
             llm_name: Name of the LLM model to use
-            method: AutoG processing method (autog-s, autog-m, baseline)
-            task_name: Task identifier (e.g., "custom:kg")
-            dataset_name: Name for the dataset
+            method: AutoG processing method (autog-s)
+            task_name: Task identifier (e.g., "custom:relation")
+            dataset_name: Name for the dataset. Default is `custom`.
             seed: Random seed for reproducibility
             max_rounds: Maximum number of processing rounds
             progress_callback: Optional callback for progress updates
@@ -339,7 +300,7 @@ class SimpleAutoGService:
                 print(f"WARNING: Invalid method '{method}' in service, using 'autog-s'")
                 method = "autog-s"
             
-            valid_methods = ["autog-s", "autog-m", "baseline"]
+            valid_methods = ["autog-s"]
             if method not in valid_methods:
                 print(f"WARNING: Unknown method '{method}' in service, using 'autog-s'")
                 method = "autog-s"

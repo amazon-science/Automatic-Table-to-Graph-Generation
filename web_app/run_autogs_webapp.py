@@ -41,13 +41,13 @@ def main():
     if aws_access_key and aws_secret_key:
         print("✅ AWS credentials found in environment")
         region = os.environ.get('AWS_DEFAULT_REGION', 'us-west-2')
-        print(f"   Access Key: {aws_access_key[:8]}...")
+        print(f"   Access Key: {aws_access_key[:-4]}...")
         print(f"   Region: {region}")
     else:
         print("⚠️  AWS credentials not found in environment variables")
         print("   Please export them before running:")
-        print("   export AWS_ACCESS_KEY_ID=your_access_key")
-        print("   export AWS_SECRET_ACCESS_KEY=your_secret_key")
+        print("   export AWS_ACCESS_KEY_ID=<your_access_key>")
+        print("   export AWS_SECRET_ACCESS_KEY=<your_secret_key>")
     
     # Construct streamlit command
     cmd = [
