@@ -647,18 +647,6 @@ def render_processing_section(config: TaskConfig):
     # ALWAYS show the Run AutoG button - make it very prominent
     # st.markdown("---")
     
-    # # Create a prominent button section
-    # st.markdown("""
-    # <div style="
-    #     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    #     padding: 2rem;
-    #     border-radius: 1rem;
-    #     margin: 1rem 0;
-    #     text-align: center;
-    #     border: 1px solid #e1e5e9;
-    # ">
-    # """, unsafe_allow_html=True)
-    
     # Create a perfectly centered button with better spacing
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -687,8 +675,6 @@ def render_processing_section(config: TaskConfig):
     # Close the styled container
     st.markdown("</div>", unsafe_allow_html=True)
     
-
-    
     # Show what will happen when button is clicked
     if ready_to_run:
         st.info("💡 This will analyze your data and generate a graph schema using AI.")
@@ -699,10 +685,6 @@ def render_processing_section(config: TaskConfig):
         st.info("🔄 AutoG is currently processing. Please wait for completion or stop the process above.")
     else:
         st.warning("⚠️ Button will be enabled when all requirements are met.")
-    
-
-    
-
     
     # Process AutoG when button is clicked
     if run_button:
@@ -778,25 +760,6 @@ def render_processing_section(config: TaskConfig):
                 'status_text': status_text
             }
             run_autogs(config)
-        
-        # Show logs section
-        # st.markdown("---")
-        # st.markdown("#### 📋 Round Execution Details")
-        
-        # if task_running:
-        #     # During processing - show live log stream
-        #     st.info("🔄 Live logs will appear here as AutoG processes...")
-            
-        #     # Create live log container
-        #     live_log_container = st.empty()
-        #     st.session_state.logs_placeholder = live_log_container
-            
-        #     # Show current logs if any
-        #     with live_log_container.container():
-        #         render_live_logs()
-        # else:
-        #   # After processing - show detailed round logs
-        #   render_move_based_logs()
 
 
 def show_current_logs(cur_logs, round_completed):
@@ -904,35 +867,6 @@ def show_current_logs(cur_logs, round_completed):
             st.info("No logs available for this round")
 
 
-# def create_realtime_logger():
-#     """Create a simple callback logger for real-time round execution details"""
-#     def log_callback(message, round_num=None, move_data=None):
-#         """Simple callback that logs and immediately updates UI"""
-#         # Add to session state logs
-#         add_log_entry(message, round_num)
-        
-#         # Force immediate UI update with the detailed structure
-#         try:
-#             logs_placeholder = st.session_state.get('logs_placeholder')
-#             if logs_placeholder:
-#                 # Clear and re-render with updated logs
-#                 logs_placeholder.empty()
-#                 with logs_placeholder.container():
-#                     st.info("📝 Live logs will appear here during processing...")
-#         except Exception as e:
-#             # If UI update fails, at least log it for debugging
-#             try:
-#                 add_log_entry(f"UI update failed: {str(e)}")
-#             except:
-#                 pass
-        
-#         return True  # Continue processing
-    
-#     return log_callback
-
-# # render_live_logs() function removed - was duplicate of render_move_based_logs() and unused
-
-
 def render_move_based_logs():
     """Render move-based logs integrated into the AutoG Agent Running section"""
     round_logs = st.session_state.get('round_logs', {})
@@ -946,23 +880,6 @@ def render_move_based_logs():
 
     sorted_rounds = sorted(round_logs.keys())
     rounds_to_show = []
-    
-    # for round_num in sorted_rounds:
-    #     logs = round_logs[round_num]
-    #     # Check if this round has no moves
-    #     if len(logs) <= 2: 
-    #         continue  # Skip this round
-    #     else:
-    #         rounds_to_show.append(round_num)
-    
-    # # # Show info message if last round was skipped
-    # # if last_round_skipped:
-    # #     st.info("ℹ️ Final completion round hidden (contains only termination message)")
-    
-    # # If no rounds to show after filtering, show a message
-    # if not rounds_to_show:
-    #     st.info("📝 No detailed round execution to display")
-    #     return
     
     # Show detailed logs for each round with move organization
     for round_num in sorted_rounds:
@@ -1083,60 +1000,6 @@ def render_move_based_logs():
             else:
                 st.info("No logs available for this round")
 
-# def create_basic_logger():
-#     """
-#     Create a basic callback logger for real-time updates
-    
-#     This is a simple callback-based logging approach that:
-#     1. Gets called immediately when AutoG has something to log
-#     2. Stores the log in session state
-#     3. Tries to update the UI in real-time
-    
-#     Usage: 
-#     - AutoG service calls: logger_callback("Starting round 1", round_num=1)
-#     - The callback immediately updates the UI
-#     - No complex threading or queuing needed
-#     """
-#     def log_callback(message, round_num=None, data=None):
-#         """Basic callback function that logs messages in real-time"""
-#         timestamp = datetime.now().strftime("%H:%M:%S")
-        
-#         # Create log entry
-#         log_entry = {
-#             'timestamp': timestamp,
-#             'message': str(message),
-#             'round': round_num,
-#             'data': data
-#         }
-        
-#         # Add to session state logs
-#         if round_num is not None:
-#             # Add to round-specific logs
-#             if 'round_logs' not in st.session_state:
-#                 st.session_state.round_logs = {}
-#             if round_num not in st.session_state.round_logs:
-#                 st.session_state.round_logs[round_num] = []
-#             st.session_state.round_logs[round_num].append(log_entry)
-#         else:
-#             # Add to general processing logs
-#             if 'processing_logs' not in st.session_state:
-#                 st.session_state.processing_logs = []
-#             st.session_state.processing_logs.append(log_entry)
-        
-#         # Update current round if provided
-#         if round_num is not None:
-#             st.session_state.current_round = round_num
-        
-#         # Try to update UI in real-time (basic approach)
-#         try:
-#             # Update live logs display if placeholder exists
-#             logs_placeholder = st.session_state.get('logs_placeholder')
-#             if logs_placeholder:
-#                 with logs_placeholder.container():
-#                     st.info("📝 Live logs will appear here during processing...")
-#         except:
-#             # Ignore UI update errors during processing
-#             pass
         
 def add_log_entry(message: str, round_num: int = None):
     """Add a log entry to the session state"""
