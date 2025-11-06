@@ -1,1 +1,0 @@
-# Unit tests for AutoG2 Web App

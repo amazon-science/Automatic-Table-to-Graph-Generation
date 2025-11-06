@@ -262,10 +262,6 @@ def render_sidebar():
         # Check if AutoG is currently running
         task_running = st.session_state.get('task_running', False)
         
-        # if task_running:
-            # st.warning("⚠️ **Configuration locked during processing**")
-            # st.info("Settings are disabled while AutoG is running to prevent conflicts.")
-        
         # AWS Credentials Section
         st.markdown("### 🔐 AWS Credentials")
         
@@ -644,9 +640,6 @@ def render_processing_section(config: TaskConfig):
     
     ready_to_run = has_data and has_credentials and not_running
     
-    # ALWAYS show the Run AutoG button - make it very prominent
-    # st.markdown("---")
-    
     # Create a perfectly centered button with better spacing
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -699,10 +692,6 @@ def render_processing_section(config: TaskConfig):
     has_results = bool(st.session_state.get('results'))
     
     if task_running or has_logs or has_results:
-        # if task_running:
-            # st.markdown("### 🤖 AutoG Agent Running")
-        # else:
-            # st.markdown("### 🤖 AutoG Agent Results")
         
         # Processing status header (always show when processing or completed)
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -854,8 +843,7 @@ def show_current_logs(cur_logs, round_completed):
             if error_logs:
                 st.markdown("**Errors:**")
                 for log in error_logs:
-                    st.error(f"[{log['timestamp']}] {log['message']}")
-                
+                    st.error(f"[{log['timestamp']}] {log['message']}")             
 
             
             # Show compact summary
@@ -872,7 +860,6 @@ def render_move_based_logs():
     round_logs = st.session_state.get('round_logs', {})
     
     if not round_logs:
-        # st.info("📝 Round details will appear here as AutoG processes...")
         return
     
     st.markdown("---")
@@ -990,7 +977,6 @@ def render_move_based_logs():
                     for log in error_logs:
                         st.error(f"[{log['timestamp']}] {log['message']}")
                 
-
                 
                 # Show compact summary
                 if len(logs) > 1:
