@@ -38,5 +38,3 @@ def load_dbb_dataset_from_cfg_path_no_name(cfg_path: str):
 def get_data_id(dataset_name: str):
     assert dataset_name in ALL_DATASETS
     return name_id_mapping[dataset_name]
-
-

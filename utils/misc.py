@@ -180,8 +180,8 @@ def copy_directory(source_dir, destination_dir):
     for item in os.listdir(source_dir):
         source_item = os.path.join(source_dir, item)
         destination_item = os.path.join(destination_dir)
+        print(f'Copy contents from {source_item} to {destination_item}')
         os.system("rsync -avz --progress {} {}".format(source_item, destination_item))
-
 
 
 def get_cur_time(timezone=None, t_format="%m-%d %H:%M:%S"):

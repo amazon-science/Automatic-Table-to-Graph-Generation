@@ -76,6 +76,7 @@ class DBBColumnSchema(pydantic.BaseModel):
 class DBBTableDataFormat(str, Enum):
     PARQUET = 'parquet'
     NUMPY = 'numpy'
+    CSV = 'csv'
 
 class DBBTableSchema(pydantic.BaseModel):
     """Table schema model."""
@@ -163,8 +164,13 @@ class DBBRDBDatasetMeta(pydantic.BaseModel):
     dataset_name : str
     # Table schemas.
     tables : List[DBBTableSchema]
+
+
     # Task metadata.
-    tasks : List[DBBTaskMeta]
+    # TODO(Jian) check if need this.
+    # tasks : List[DBBTaskMeta]
+
+
     # how to construct graph 
     method: str = 'r2n'
 
