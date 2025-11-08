@@ -81,3 +81,4 @@ workspace/*
 /opt/
 
 multi-table-benchmark/*.sh
+/web_app/to_delete/
