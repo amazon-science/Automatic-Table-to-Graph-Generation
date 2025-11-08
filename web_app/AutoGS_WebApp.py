@@ -45,10 +45,61 @@ try:
 except ImportError as e:
     st.error(f"Failed to import AutoG-S components: {e}")
     st.error("Make sure you're running from the correct directory with all dependencies installed.")
+    
+    # Write import error to log file
+    import datetime
+    import traceback
+    import sys
+    error_log_path = "autogs_import_error.log"
+    try:
+        with open(error_log_path, "a", encoding="utf-8") as f:
+            f.write(f"\n{'='*80}\n")
+            f.write(f"AutoG-S Import Error Log - {datetime.datetime.now()}\n")
+            f.write(f"{'='*80}\n")
+            f.write(f"Import Error: {str(e)}\n")
+            f.write(f"Error Type: {type(e).__name__}\n")
+            f.write(f"\nFull Traceback:\n")
+            f.write(traceback.format_exc())
+            f.write(f"\nPython Path:\n")
+            for i, path in enumerate(sys.path[:15]):
+                f.write(f"  {i}: {path}\n")
+            f.write(f"\nCurrent Working Directory: {os.getcwd()}\n")
+            f.write(f"{'='*80}\n")
+        st.info(f"📝 Import error log written to: `{error_log_path}`")
+    except Exception as log_error:
+        st.warning(f"Could not write import error log: {log_error}")
+    
     st.stop()
 
 # Load environment variables
 load_dotenv()
+
+# Create startup log
+def log_startup_info():
+    """Log startup information for debugging"""
+    startup_log_path = "autogs_startup.log"
+    try:
+        with open(startup_log_path, "w", encoding="utf-8") as f:
+            f.write(f"AutoG-S Web App Startup Log - {datetime.now()}\n")
+            f.write(f"{'='*60}\n")
+            f.write(f"Current Working Directory: {os.getcwd()}\n")
+            f.write(f"Python Executable: {sys.executable}\n")
+            f.write(f"Python Version: {sys.version}\n")
+            f.write(f"\nPython Path (first 15 entries):\n")
+            for i, path in enumerate(sys.path[:15]):
+                f.write(f"  {i}: {path}\n")
+            f.write(f"\nEnvironment Variables:\n")
+            for key in ['PYTHONPATH', 'CONDA_DEFAULT_ENV', 'AWS_ACCESS_KEY_ID', 'AWS_DEFAULT_REGION']:
+                value = os.environ.get(key, 'Not set')
+                if key == 'AWS_ACCESS_KEY_ID' and value != 'Not set':
+                    value = value[:8] + '...'  # Mask sensitive info
+                f.write(f"  {key}: {value}\n")
+            f.write(f"{'='*60}\n")
+    except Exception as e:
+        print(f"Could not write startup log: {e}")
+
+# Log startup info
+log_startup_info()
 
 # Page configuration
 st.set_page_config(
@@ -170,7 +221,8 @@ class TaskConfig:
     """Task configuration"""
     llm_model: str
     method: str
-    task_name: str
+    task: str
+    dataset_name: str
     custom_task: Optional[str] = None
     use_custom_task: bool = False
     cache_strategy: str = "hybrid"
@@ -297,10 +349,21 @@ export AWS_DEFAULT_REGION=<your_default_region>
         # Use session counter to reset widgets
         widget_counter = st.session_state.get('widget_counter', 0)
         
+        # LLM Model selection with default
+        llm_options = list(LLM_MODELS.keys())
+        llm_index = 0  # Default to first item
+        default_llm = DEFAULT_CONFIG.get("llm_model")
+        if default_llm and default_llm in llm_options:
+            llm_index = llm_options.index(default_llm)
+        elif not llm_options:
+            # No options available
+            llm_options = [None]
+            llm_index = 0
+        
         llm_model = st.selectbox(
             "LLM Model",
-            options=list(LLM_MODELS.keys()),
-            index=list(LLM_MODELS.keys()).index(DEFAULT_CONFIG["llm_model"]),
+            options=llm_options,
+            index=llm_index,
             help="Select the language model for AutoG-S processing",
             disabled=task_running,
             key=f"llm_model_{widget_counter}"
@@ -310,44 +373,80 @@ export AWS_DEFAULT_REGION=<your_default_region>
         
         # Method Configuration
         st.markdown("### ⚙️ Processing Configuration")
-        # Ensure method has a valid default value
-        try:
-            default_method_index = AUTOG_CONFIG["methods"].index(DEFAULT_CONFIG["method"])
-        except (ValueError, KeyError):
-            default_method_index = 0  # Fallback to first method
+        # Method selection with default
+        method_options = AUTOG_CONFIG["methods"]
+        method_index = 0  # Default to first item
+        default_method = DEFAULT_CONFIG.get("method")
+        if default_method and default_method in method_options:
+            method_index = method_options.index(default_method)
         
         method = st.selectbox(
             "Method",
-            options=AUTOG_CONFIG["methods"],
-            index=default_method_index,
+            options=method_options,
+            index=method_index,
             help="AutoG-S processing method",
             disabled=task_running,
             key=f"method_{widget_counter}"
         )
         
-        # Ensure method is never None
+        # Ensure method is never None - always use "autog-s"
         if method is None or method == "":
-            method = AUTOG_CONFIG["methods"][0]  # Fallback to first available method
+            method = "autog-s"
         
         # Task Configuration
+        # Get default dataset and task from separate keys, fallback to first available or None
+        dataset_options = list(AUTOG_CONFIG["datasets"].keys())
+        default_dataset = DEFAULT_CONFIG.get("dataset")
+        if not default_dataset or default_dataset not in dataset_options:
+            default_dataset = dataset_options[0] if dataset_options else None
+        
+        # Dataset selection with default
+        dataset_index = 0  # Default to first item
+        if not dataset_options:
+            # No options available
+            dataset_options = [None]
+            dataset_index = 0
+        elif default_dataset and default_dataset in dataset_options:
+            dataset_index = dataset_options.index(default_dataset)
+        
         dataset_type = st.selectbox(
             "Dataset Type",
-            options=list(AUTOG_CONFIG["datasets"].keys()),
+            options=dataset_options,
+            index=dataset_index,
             help="Type of dataset for task selection",
             disabled=task_running,
             key=f"dataset_type_{widget_counter}"
         )
         
+        # Task selection with default
+        task_options = AUTOG_CONFIG["datasets"].get(dataset_type, []) if dataset_type else []
+        task_index = 0  # Default to first item
+        
+        # Get default task, fallback to first available for the selected dataset or None
+        default_task_name = DEFAULT_CONFIG.get("task")
+        if (dataset_type == default_dataset and 
+            default_task_name and 
+            default_task_name in task_options):
+            task_index = task_options.index(default_task_name)
+        # If default task doesn't exist for current dataset, use first available or None
+        elif not default_task_name or default_task_name not in task_options:
+            if not task_options:
+                # No options available
+                task_options = [None]
+                task_index = 0
+            else:
+                task_index = 0  # First available task for this dataset
+        
         task = st.selectbox(
             "Task",
-            options=AUTOG_CONFIG["datasets"][dataset_type],
+            options=task_options,
+            index=task_index,
             help="Specific task within the dataset type",
             disabled=task_running,
             key=f"task_{widget_counter}"
         )
         
         # Show task description
-        task_name = f"{dataset_type}:{task}"
         try:
             from prompts.task import get_task_description
             task_desc = get_task_description(dataset_type, task)
@@ -362,16 +461,14 @@ export AWS_DEFAULT_REGION=<your_default_region>
         if use_custom_task:
             custom_task = st.text_area(
                 "Custom Task Description",
-                placeholder="Describe your custom task here...",
-                help="Provide a detailed description of your custom task. E.g., 'This task is to find the primary keys and foreign keys among the given tables.'",
+                placeholder="Describe your custom task here... E.g., 'This task is to find the primary keys and foreign keys among the given tables.'",
+                help="Provide a detailed description of your custom task.",
                 disabled=task_running,
                 key=f"custom_task_{widget_counter}"
             )
             # Ensure custom_task is None if empty string
             if not custom_task or custom_task.strip() == "":
                 custom_task = None
-        
-        task_name = f"{dataset_type}:{task}"
         
         # Advanced Settings
         with st.expander("🔧 Advanced Settings", expanded=False):
@@ -406,12 +503,13 @@ export AWS_DEFAULT_REGION=<your_default_region>
         
         # Final validation before creating TaskConfig
         if method is None or method == "":
-            method = DEFAULT_CONFIG["method"]  # Use default as final fallback
+            method = "autog-s"
         
         return TaskConfig(
             llm_model=llm_model,
             method=method,
-            task_name=task_name,
+            task=task,
+            dataset_name=dataset_type,
             custom_task=custom_task if use_custom_task else None,
             use_custom_task=use_custom_task,
             cache_strategy=cache_strategy,
@@ -476,12 +574,15 @@ def render_file_upload():
         # No files in widget - check if we should preserve dataframes (post-processing state)
         has_results = bool(st.session_state.get('results', None))
         rounds_completed = st.session_state.get('rounds_completed', 0)
+        has_error = bool(st.session_state.get('processing_error', None))
         
         # Check if results were manually cleared (preserve data in this case)
         results_manually_cleared = st.session_state.get('results_manually_cleared', False)
         
-        if current_dataframes and not has_results and rounds_completed == 0 and not results_manually_cleared:
-            # No results and no processing completed AND not manually cleared - user actively removed files, clear dataframes
+        # Only clear dataframes if user actively removed files AND there's no processing state
+        # Preserve dataframes if: has results, has completed rounds, has error, or results were manually cleared
+        if current_dataframes and not has_results and rounds_completed == 0 and not has_error and not results_manually_cleared:
+            # No results, no processing, no error, not manually cleared - user actively removed files, clear dataframes
             st.session_state.dataframes = {}
             st.session_state.uploaded_files = {}
             
@@ -496,7 +597,7 @@ def render_file_upload():
             st.session_state.round_logs = {}
             
             st.rerun()
-        # If has_results or rounds_completed > 0, preserve dataframes (post-processing state)
+        # If has_results or rounds_completed > 0 or has_error, preserve dataframes (post-processing/error state)
     # Show current data status and clear button (refresh state each time)
     current_dataframes = st.session_state.get('dataframes', {})
     
@@ -516,7 +617,7 @@ def render_file_upload():
             st.session_state.uploaded_files = {}
             
             # Clear processing states but preserve results
-            keys_to_clear = ['current_round', 'rounds_completed', 'task_running', 'stop_requested', 'processing_started']
+            keys_to_clear = ['current_round', 'rounds_completed', 'task_running', 'stop_requested', 'processing_started', 'processing_error']
             for key in keys_to_clear:
                 if key in st.session_state:
                     del st.session_state[key]
@@ -609,7 +710,7 @@ def render_processing_section(config: TaskConfig):
             if config.use_custom_task:
                 st.markdown(f"**Task:** Custom Task")
             else:
-                st.markdown(f"**Task:** {config.task_name}")
+                st.markdown(f"**Task:** {config.dataset_name}:{config.task}")
         with col2:
             st.markdown(f"**Max Rounds:** {config.max_rounds}")
             st.markdown(f"**Cache Strategy:** {config.cache_strategy}")
@@ -680,6 +781,18 @@ def render_processing_section(config: TaskConfig):
     
     # Process AutoG-S when button is clicked
     if run_button:
+        # Clear any previous run state
+        if 'processing_error' in st.session_state:
+            del st.session_state.processing_error
+        if 'results' in st.session_state:
+            del st.session_state.results
+        
+        # Reset processing state
+        st.session_state.current_round = 0
+        st.session_state.rounds_completed = 0
+        st.session_state.processing_logs = []
+        st.session_state.round_logs = {}
+        
         # Set task_running immediately to disable configuration
         st.session_state.task_running = True
         # Force immediate rerun to update sidebar disabled state
@@ -689,6 +802,46 @@ def render_processing_section(config: TaskConfig):
     task_running = st.session_state.get('task_running', False)
     has_logs = bool(st.session_state.get('round_logs'))
     has_results = bool(st.session_state.get('results'))
+    has_error = bool(st.session_state.get('processing_error'))
+    
+    # Display error if one occurred
+    if has_error and not task_running:
+        error_info = st.session_state.processing_error
+        
+        # Show user-friendly error message
+        if "already been added" in error_info['exception'] or "has already been added" in error_info['exception']:
+            st.error("❌ AutoG-S encountered a system error during processing. This may be due to LLM response issues. Please try running again.")
+        else:
+            st.error(f"❌ {error_info['message']}")
+        
+        with st.expander("🔍 Error Details", expanded=True):
+            st.markdown("**System Error from AutoG Pipeline**")
+            st.markdown(f"**Error Type:** `{error_info['type']}`")
+            st.markdown(f"**Error Message:** {error_info['exception']}")
+            
+            st.markdown("**Configuration:**")
+            for key, value in error_info['config'].items():
+                st.markdown(f"- {key}: `{value}`")
+            
+            st.markdown("**Full Traceback:**")
+            st.code(error_info['traceback'], language='python')
+            
+            st.markdown("**What to do:**")
+            if "already been added" in error_info['exception'] or "has already been added" in error_info['exception']:
+                st.markdown("- This is a system error from the AutoG pipeline (possibly due to LLM response issues)")
+                st.markdown("- **Try running again** - the LLM may produce a different result")
+                st.markdown("- If the error persists, try with a different seed value or task")
+            elif "credentials" in error_info['exception'].lower() or "bedrock" in error_info['exception'].lower():
+                st.markdown("- Check that AWS credentials are valid and have Bedrock access")
+                st.markdown("- Verify credentials are exported in your environment")
+            elif "import" in error_info['exception'].lower() or "module" in error_info['exception'].lower():
+                st.markdown("- Ensure you're running in the `autog-cpu` conda environment")
+                st.markdown("- Verify that all AutoG-S dependencies are installed")
+            else:
+                st.markdown("- This appears to be a system error from the AutoG pipeline")
+                st.markdown("- **Try running again** - the issue may be transient")
+                st.markdown("- If the error persists, try with different configuration or data")
+        
     
     if task_running or has_logs or has_results:
         
@@ -723,9 +876,10 @@ def render_processing_section(config: TaskConfig):
 
              # show move execution details
             round_logs = st.session_state.get('round_logs', {})
-            if len(round_logs) > 0:
+            if len(round_logs) > 0 and current_round in round_logs:
                 cur_round_logs = round_logs[current_round]
-                show_current_logs(cur_round_logs, round_completed)
+                # During processing, round is not yet completed
+                show_current_logs(cur_round_logs, round_completed=False)
 
         else:
             # After processing - show final state
@@ -1175,7 +1329,7 @@ def run_autogs(config: TaskConfig):
             else:
                 add_log_entry(f"  - custom_description: Not specified")
         else:
-            add_log_entry(f"  - task_name: {config.task_name}")
+            add_log_entry(f"  - task_name: {config.dataset_name}:{config.task}")
         add_log_entry(f"  - max_rounds: {config.max_rounds}")
         
         # Ensure method parameter is definitely not None
@@ -1191,8 +1345,8 @@ def run_autogs(config: TaskConfig):
             dataframes=st.session_state.dataframes,
             llm_name=config.llm_model,
             method=method_param,  # Use validated method parameter
-            task_name=config.task_name,
-            dataset_name=f"webapp_{st.session_state.session_id}",
+            task_name=config.task,
+            dataset_name=config.dataset_name,
             seed=config.seed,
             max_rounds=config.max_rounds,
             progress_callback=progress_callback,
@@ -1261,8 +1415,60 @@ def run_autogs(config: TaskConfig):
         if status_indicator:
             status_indicator.error("❌ Failed")
         error_msg = f"AutoG-S processing failed: {str(e)}"
+        
+        # Store error in session state so it persists across reruns
+        st.session_state.processing_error = {
+            'message': error_msg,
+            'exception': str(e),
+            'type': type(e).__name__,
+            'traceback': traceback.format_exc(),
+            'config': {
+                'llm_model': config.llm_model,
+                'method': config.method,
+                'task': config.task,
+                'dataset': config.dataset_name,
+                'seed': config.seed,
+                'max_rounds': config.max_rounds,
+            }
+        }
+        
         st.error(f"❌ {error_msg}")
         add_log_entry(f"ERROR: {error_msg}")
+        
+        # Write detailed error to log file
+        import datetime
+        error_log_path = "autogs_error.log"
+        try:
+            with open(error_log_path, "a", encoding="utf-8") as f:
+                f.write(f"\n{'='*80}\n")
+                f.write(f"AutoG-S Error Log - {datetime.datetime.now()}\n")
+                f.write(f"{'='*80}\n")
+                f.write(f"Error Message: {str(e)}\n")
+                f.write(f"Error Type: {type(e).__name__}\n")
+                f.write(f"\nFull Traceback:\n")
+                f.write(traceback.format_exc())
+                f.write(f"\nConfiguration:\n")
+                f.write(f"- LLM Model: {config.llm_model}\n")
+                f.write(f"- Method: {config.method}\n")
+                f.write(f"- Task: {config.task}\n")
+                f.write(f"- Dataset: {config.dataset_name}\n")
+                f.write(f"- Seed: {config.seed}\n")
+                f.write(f"- Max Rounds: {config.max_rounds}\n")
+                f.write(f"- Use Custom Task: {config.use_custom_task}\n")
+                if config.use_custom_task:
+                    f.write(f"- Custom Task: {config.custom_task}\n")
+                f.write(f"\nDataframes:\n")
+                for name, df in st.session_state.dataframes.items():
+                    f.write(f"- {name}: {df.shape} ({df.memory_usage(deep=True).sum() / 1024**2:.1f} MB)\n")
+                f.write(f"\nPython Path:\n")
+                import sys
+                for i, path in enumerate(sys.path[:10]):
+                    f.write(f"  {i}: {path}\n")
+                f.write(f"\n{'='*80}\n")
+            
+            st.info(f"📝 Detailed error log written to: `{error_log_path}`")
+        except Exception as log_error:
+            st.warning(f"Could not write error log: {log_error}")
         
         # Logs are shown in the main processing section
         

@@ -46,18 +46,18 @@ AUTOG_CONFIG = {
         "autog-s"  # AutoG-S directly adopts the final output state (only method supported in web app)
     ],
     "datasets": {
-        "avs": [
-            "repeater"  # Predict repeat purchases
-        ],
         "custom": [
             "relation", # Find primary/foreign keys
             "kg",       # Knowledge graph construction
             "kg2"       # Enhanced knowledge graph construction
-        ]
+        ],
         "mag": [
             "venue",    # Predict paper venue
             "year",     # Predict publication year
             "cite"      # Predict citation relationships
+        ],
+        "avs": [
+            "repeater"  # Predict repeat purchases
         ],
         "movielens": [
             "ratings"   # Predict user ratings on movies
@@ -86,8 +86,8 @@ AUTOG_CONFIG = {
 DEFAULT_CONFIG = {
     "llm_model": "sonnet4",
     "method": "autog-s", 
-    "datasets": "custom",
-    "task": "custom:relation",
+    "dataset": "custom",
+    "task": "relation",
     "seed": 42,
     "cache_strategy": "hybrid"
 }

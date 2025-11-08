@@ -7,16 +7,46 @@ import os
 import sys
 import subprocess
 import argparse
+import socket
 from pathlib import Path
+
+def find_free_port(start_port=8501, max_attempts=10):
+    """Find a free port starting from start_port"""
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('', port))
+                return port
+        except OSError:
+            continue
+    raise RuntimeError(f"Could not find a free port in range {start_port}-{start_port + max_attempts}")
 
 def main():
     """Run the AutoG-S web application"""
     parser = argparse.ArgumentParser(description="Run AutoG-S Web Application")
-    parser.add_argument("--port", type=int, default=8501, help="Port to run on (default: 8501)")
+    parser.add_argument("--port", type=int, help="Port to run on (default: auto-detect starting from 8501)")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)")
     parser.add_argument("--theme", type=str, choices=["light", "dark"], help="Streamlit theme")
+    parser.add_argument("--no-auto-port", action="store_true", help="Don't auto-detect port, fail if specified port is busy")
     
     args = parser.parse_args()
+    
+    # Determine port to use
+    if args.port:
+        if args.no_auto_port:
+            port = args.port
+        else:
+            # Check if specified port is available, otherwise find next available
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.bind(('', args.port))
+                port = args.port
+            except OSError:
+                print(f"⚠️  Port {args.port} is busy, finding next available port...")
+                port = find_free_port(args.port)
+    else:
+        # Auto-detect starting from 8501
+        port = find_free_port(8501)
     
     # Get the web app file path
     current_dir = Path(__file__).parent
@@ -52,7 +82,7 @@ def main():
     # Construct streamlit command
     cmd = [
         sys.executable, "-m", "streamlit", "run", str(webapp_path),
-        f"--server.port={args.port}",
+        f"--server.port={port}",
         f"--server.address={args.host}",
         "--server.headless=true"
     ]
@@ -61,7 +91,9 @@ def main():
         cmd.append(f"--theme.base={args.theme}")
     
     try:
-        print(f"🚀 Starting AutoG-S Web App on http://{args.host}:{args.port}")
+        print(f"🚀 Starting AutoG-S Web App on http://{args.host}:{port}")
+        if port != args.port and args.port:
+            print(f"   (Originally requested port {args.port} was busy)")
         print("   Press Ctrl+C to stop")
         subprocess.run(cmd, check=True)
     except KeyboardInterrupt:

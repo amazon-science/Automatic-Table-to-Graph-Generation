@@ -121,9 +121,14 @@ class SimpleAutoGService:
         """Get LLM configuration from centralized webutils/config.py"""
         from webutils.config import LLM_MODELS, DEFAULT_CONFIG
         
-        if llm_name not in LLM_MODELS:
-            print(f"WARNING: Unknown model '{llm_name}', using default '{DEFAULT_CONFIG['llm_model']}'")
-            llm_name = DEFAULT_CONFIG["llm_model"]
+        if not llm_name or llm_name not in LLM_MODELS:
+            # Use first available model as fallback, or None if no models available
+            if LLM_MODELS:
+                first_model = list(LLM_MODELS.keys())[0]
+                print(f"WARNING: Unknown model '{llm_name}', using first available '{first_model}'")
+                llm_name = first_model
+            else:
+                raise ValueError("No LLM models available in configuration")
         
         model_config = LLM_MODELS[llm_name]
         return {
@@ -160,7 +165,8 @@ class SimpleAutoGService:
         """Generate metadata from DataFrames"""
         meta_dict = {
             'dataset_name': dataset_name,
-            'tables': []
+            'tables': [],
+            'tasks': []  # Required field for DBBRDBDatasetMeta
         }
         
         for table_name, df in dataframes.items():
@@ -196,7 +202,7 @@ class SimpleAutoGService:
         dataframes: Dict[str, pd.DataFrame],
         llm_name: str = "sonnet4",
         method: str = "autog-s",
-        task_name: str = "custom:relation",
+        task_name: str = "relation",
         dataset_name: str = "custom",
         seed: int = 0,
         max_rounds: int = 5,
@@ -210,7 +216,7 @@ class SimpleAutoGService:
             dataframes: Dictionary of table name to DataFrame
             llm_name: Name of the LLM model to use
             method: AutoG processing method (autog-s)
-            task_name: Task identifier (e.g., "custom:relation")
+            task_name: Task identifier (e.g., "relation")
             dataset_name: Name for the dataset. Default is `custom`.
             seed: Random seed for reproducibility
             max_rounds: Maximum number of processing rounds
@@ -220,6 +226,10 @@ class SimpleAutoGService:
         Returns:
             Tuple of (agent_history, analysis_result, output_path, generated_files)
         """
+        # Check if backend is available
+        if not BACKEND_AVAILABLE:
+            raise ImportError("AutoG-S backend modules are not available. Please check your environment setup and PYTHONPATH.")
+        
         try:
             # Set random seed
             seed_everything(seed)
@@ -240,15 +250,14 @@ class SimpleAutoGService:
             
             # Create DBBRDBDataset
             data = DBBRDBDataset(temp_path)
+
+            # Get task description
             
-            # Parse task and get description
-            dataset, task = task_name.split(':')[0], task_name.split(':')[1]
-            
-            # Use custom task description if provided, otherwise get from task definitions
+            # Use custom task description if provided, otherwise use selected task
             if custom_task_description:
                 task_description = custom_task_description
             else:
-                task_description = get_task_description(dataset, task)
+                task_description = get_task_description(dataset_name, task_name)
             
             # Analyze DataFrames
             table_meta_dict = {
@@ -286,11 +295,17 @@ class SimpleAutoGService:
             }
             
             # Generate schema input
-            schema_input = self._generate_training_metainfo(data, metainfo, task)
+            schema_input = self._generate_training_metainfo(data, metainfo, task_name)
             
-            # Setup AutoG paths
+            # Setup AutoG paths - agent expects to find data/ at parent level
+            # Agent calculates parent_dir = os.path.dirname(path_to_file)
+            # So we need path_to_file to be a subdirectory of temp_path
             autog_path = os.path.join(temp_path, "autog")
             os.makedirs(autog_path, exist_ok=True)
+            
+            # # Create empty task directory that agent expects to copy from
+            # task_dir = os.path.join(temp_path, task_name)
+            # os.makedirs(task_dir, exist_ok=True)
             
             # Get DeepJoin path (optional)
             deepjoin_path = self._get_deepjoin_path()
@@ -305,8 +320,6 @@ class SimpleAutoGService:
                 print(f"WARNING: Unknown method '{method}' in service, using 'autog-s'")
                 method = "autog-s"
             
-            # print(f"DEBUG: Creating AutoG_Agent with mode='{method}'")
-            
             # Initialize AutoG Agent
             agent = AutoG_Agent(
                 initial_schema=schema_input,
@@ -320,8 +333,8 @@ class SimpleAutoGService:
                 threshold=max_rounds,  # Use max_rounds as threshold
                 output_size=llm_config["output_size"],
                 task_description=task_description,
-                dataset=dataset,
-                task_name=task,
+                dataset=dataset_name,
+                task_name=task_name,
                 schema_info=analysis_result,
                 lm_path=deepjoin_path,
                 recalculate=False
