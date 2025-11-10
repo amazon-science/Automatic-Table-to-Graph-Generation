@@ -1355,7 +1355,9 @@ def run_autogs(config: TaskConfig):
         
         # Parse agent history for detailed round information
         actual_rounds = st.session_state.get('current_round', 0)
-        hit_max_rounds = False
+        
+        # Check if hit max rounds by comparing actual rounds with configured max
+        hit_max_rounds = (actual_rounds >= config.max_rounds)
         
         if agent_history:
             # Parse the agent history to extract additional information
@@ -1369,13 +1371,17 @@ def run_autogs(config: TaskConfig):
                 # Add agent history to logs (these are internal agent decisions)
                 add_log_entry(f"Agent decision: {line}")
             
-            # Check if hit max rounds
-            if any(phrase in agent_history.lower() for phrase in ['maximum', 'max', 'limit', 'threshold']):
-                hit_max_rounds = True
+            # Log if max rounds was hit
+            if hit_max_rounds:
                 add_log_entry(f"AutoG-S reached maximum rounds limit ({config.max_rounds})")
         
         # Use the current round from real-time tracking
-        st.session_state.rounds_completed = actual_rounds-1 if actual_rounds > 0 else 1
+        # If hit max_rounds, show all rounds; otherwise subtract 1 to exclude "No more action" round
+        if hit_max_rounds:
+            st.session_state.rounds_completed = actual_rounds
+        else:
+            st.session_state.rounds_completed = actual_rounds - 1 if actual_rounds > 0 else 1
+        
         add_log_entry(f"Processing completed with {st.session_state.rounds_completed} rounds")
         
         # Update progress indicators to show completion
