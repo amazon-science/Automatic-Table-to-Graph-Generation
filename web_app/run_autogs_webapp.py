@@ -52,10 +52,6 @@ def main():
     current_dir = Path(__file__).parent
     webapp_path = current_dir / "AutoGS_WebApp.py"
     
-    if not webapp_path.exists():
-        print(f"Error: {webapp_path} not found!")
-        sys.exit(1)
-    
     # Check environment
     conda_env = os.environ.get('CONDA_DEFAULT_ENV', 'unknown')
     print(f"🐍 Current conda environment: {conda_env}")

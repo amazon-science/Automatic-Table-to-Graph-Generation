@@ -258,7 +258,6 @@ class SessionState:
             "rounds_completed": 0,
             "processing_logs": [],
             "round_logs": {},
-
             "processing_started": False,
             "widget_counter": 0,
             "uploader_reset_counter": 0,
@@ -693,7 +692,6 @@ def render_data_preview():
                 st.markdown("**Data Types:**")
                 for dtype, count in dtype_counts.items():
                     st.markdown(f"- {dtype}: {count}")
-
 
 
 def render_processing_section(config: TaskConfig):
