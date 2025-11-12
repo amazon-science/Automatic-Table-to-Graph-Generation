@@ -38,7 +38,7 @@ task_description = {
         "upvote": "The task is to predict the Target column of table Posts, which means predicting whether the post will be upvoted or not.", 
         "churn": "The task is to predict the Target column of table Users, which means predicting whether the user will churn or not."
     },
-    "adsp": {
+    "ads": {
         "kg": "This task is to detect and extract entities and relationships from the given tables to construct a knowledge graph that represents the underlying data semantics. Regarding entity Identification, to identify potential entities represented in the tables. Entities typically correspond to key columns (unique identifiers such as 'node_id', 'customer_id', 'product_id', 'merchant_id', 'marketplace_id', etc.). For each entity, determine its type (e.g., Node, Customer, Product, Merchant, Marketplace, etc.). Regarding relationship extraction, to identify relationships within a single table (e.g., from Purchase table, 'order_id' contains 'asin', 'asin' purchased in 'order_id', etc.), and to identify relationships across multiple tables via foreign keys, column references, or shared identifiers. Each relationship should connect two entities using a verb phrase or predicate that expresses their link (e.g., sold_by, purchases, purchased_in, located_in, ordered_by, bought, etc.)."
     },
     "custom": {
