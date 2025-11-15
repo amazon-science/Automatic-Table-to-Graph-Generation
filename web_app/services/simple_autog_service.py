@@ -144,39 +144,70 @@ class SimpleAutoGService:
                 return text[:i] + text[i:].replace(char, char.upper(), 1)
         return text
     
-    def create_temp_workspace(self, dataframes: Dict[str, pd.DataFrame], dataset_name: str) -> str:
-        """Create temporary workspace"""
+    def create_temp_workspace(self, dataframes: Dict[str, tuple], dataset_name: str) -> str:
+        """Create temporary workspace
+        
+        Args:
+            dataframes: Dict where values are (DataFrame, original_filename) tuples
+            dataset_name: Name of the dataset
+        """
         self.temp_dir = tempfile.mkdtemp(prefix="autogs_webapp_")
         data_dir = os.path.join(self.temp_dir, "data")
         os.makedirs(data_dir, exist_ok=True)
         
-        # Save DataFrames as parquet files
-        for table_name, df in dataframes.items():
+        # Save DataFrames in their original format
+        for table_name, (df, original_filename) in dataframes.items():
             clean_name = self.capitalize_first_alpha(table_name)
-            if not clean_name.endswith('.parquet'):
-                clean_name += '.parquet'
             
-            file_path = os.path.join(data_dir, clean_name)
-            df.to_parquet(file_path, index=False)
+            # Extract format from original filename extension
+            ext = os.path.splitext(original_filename)[1].lower()
+            file_path = os.path.join(data_dir, original_filename)
+
+            if ext in ['.csv', '.tsv', '.txt', '.dat', '.tab']:
+                df.to_csv(file_path, index=False)
+            elif ext in ['.parquet', '.pq', '.pqt']:
+                df.to_parquet(file_path, index=False)
+            elif ext in ['.npy', '.npz']:
+                np.savez(file_path, **{col: df[col].values for col in df.columns})
+            else:
+                df.to_parquet(file_path, index=False)
         
         return self.temp_dir
     
-    def generate_metadata(self, dataframes: Dict[str, pd.DataFrame], dataset_name: str) -> Dict[str, Any]:
-        """Generate metadata from DataFrames"""
+    def generate_metadata(self, dataframes: Dict[str, tuple], dataset_name: str) -> Dict[str, Any]:
+        """Generate metadata from DataFrames
+        
+        Args:
+            dataframes: Dict where values are (DataFrame, original_filename) tuples
+            dataset_name: Name of the dataset
+        """
         meta_dict = {
             'dataset_name': dataset_name,
             'tables': [],
             'tasks': []  # Required field for DBBRDBDatasetMeta
         }
         
-        for table_name, df in dataframes.items():
+        for table_name, (df, original_filename) in dataframes.items():
             clean_name = self.capitalize_first_alpha(table_name)
+
+            # Extract original format from filename extension
+            ext = os.path.splitext(original_filename)[1].lower()
+            
+            if ext in ['.csv', '.tsv', '.txt', '.dat', '.tab']:
+                data_format = 'csv'
+            elif ext in ['.parquet', '.pq', '.pqt']:
+                data_format = 'parquet'
+            elif ext in ['.npy', '.npz']:
+                data_format = 'numpy'
+            else:
+                # Default to parquet
+                data_format = 'parquet'
             
             table_meta = {
                 'name': clean_name,
                 'columns': [],
-                'format': 'parquet',
-                'source': f'data/{clean_name}.parquet'
+                'format': data_format,  # Original format
+                'source': f'data/{original_filename}'  # Matches saved file
             }
             
             for col_name, col_dtype in df.dtypes.to_dict().items():
@@ -199,7 +230,7 @@ class SimpleAutoGService:
     
     def run_autogs(
         self,
-        dataframes: Dict[str, pd.DataFrame],
+        dataframes: Dict[str, tuple],  # Values are (DataFrame, original_filename) tuples
         llm_name: str = "sonnet4",
         method: str = "autog-s",
         task_name: str = "relation",
@@ -213,7 +244,7 @@ class SimpleAutoGService:
         Run AutoG-S processing
         
         Args:
-            dataframes: Dictionary of table name to DataFrame
+            dataframes: Dictionary of table name to (DataFrame, original_filename) tuples
             llm_name: Name of the LLM model to use
             method: AutoG processing method (autog-s)
             task_name: Task identifier (e.g., "relation")
