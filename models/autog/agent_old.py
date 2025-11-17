@@ -168,7 +168,7 @@ class AutoG_Agent():
         
         # Check memory cache first (fastest)
         if self._deepjoin_cache is not None:
-            typer.echo("✅ Using cached deepjoin from memory")
+            typer.echo("Load the deepjoin from memory")
             result = self._deepjoin_cache
         # Then check disk cache
         elif os.path.exists(os.path.join(self.path_to_file, 'deepjoin.pkl')) and not self.recalculate:
