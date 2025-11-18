@@ -53,6 +53,7 @@ def main():
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)")
     parser.add_argument("--theme", type=str, choices=["light", "dark"], help="Streamlit theme")
     parser.add_argument("--no-auto-port", action="store_true", help="Don't auto-detect port, fail if specified port is busy")
+    parser.add_argument("--use-instance-role", action="store_true", help="Use EC2 instance role for AWS credentials (instead of environment variables)")
     
     args = parser.parse_args()
     
@@ -99,20 +100,39 @@ def main():
         print("⚠️  Warning: You should be in the 'autog-cpu' conda environment")
         print("   Run: conda activate autog-cpu")
     
-    # Check AWS credentials
-    aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
-    aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    # Setup AWS credentials (environment variables or instance role)
+    # Set USE_INSTANCE_ROLE env var so AutoGS_WebApp.py uses the same setting
+    if args.use_instance_role:
+        os.environ['USE_INSTANCE_ROLE'] = 'true'
     
-    if aws_access_key and aws_secret_key:
-        print("✅ AWS credentials found in environment")
-        region = os.environ.get('AWS_DEFAULT_REGION', 'us-west-2')
-        print(f"   Access Key: {aws_access_key[:-4]}...")
-        print(f"   Region: {region}")
-    else:
-        print("⚠️  AWS credentials not found in environment variables")
-        print("   Please export them before running:")
-        print("   export AWS_ACCESS_KEY_ID=<your_access_key>")
-        print("   export AWS_SECRET_ACCESS_KEY=<your_secret_key>")
+    sys.path.insert(0, str(current_dir))  # Add web_app to path for imports
+    try:
+        from webutils.aws_credentials import setup_aws_credentials
+        if setup_aws_credentials(use_instance_role=args.use_instance_role):
+            print("✅ AWS credentials configured")
+        else:
+            if args.use_instance_role:
+                print("⚠️  No AWS credentials found from EC2 instance role")
+                print("   Make sure you're running on an EC2 instance with an IAM role attached")
+            else:
+                print("⚠️  No AWS credentials found in environment variables")
+                print("   Tip: Use --use-instance-role to use EC2 instance role instead")
+                print("   Or export environment variables:")
+                print("   export AWS_ACCESS_KEY_ID=<your_access_key>")
+                print("   export AWS_SECRET_ACCESS_KEY=<your_secret_key>")
+    except ImportError as e:
+        aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+        aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+        if aws_access_key and aws_secret_key:
+            print("✅ AWS credentials found in environment")
+            region = os.environ.get('AWS_DEFAULT_REGION', 'us-west-2')
+            print(f"   Access Key: {aws_access_key[:-4]}...")
+            print(f"   Region: {region}")
+        else:
+            print("⚠️  No AWS credentials found")
+            print("   Please export them before running:")
+            print("   export AWS_ACCESS_KEY_ID=<your_access_key>")
+            print("   export AWS_SECRET_ACCESS_KEY=<your_secret_key>")
     
     # Construct streamlit command
     cmd = [

@@ -38,6 +38,14 @@ for path in paths_to_add:
     if path not in sys.path:
         sys.path.insert(0, path)
 
+# Setup AWS credentials (check USE_INSTANCE_ROLE env var, default to False)
+try:
+    from webutils.aws_credentials import setup_aws_credentials
+    use_instance_role = os.environ.get('USE_INSTANCE_ROLE', '').lower() in ('true', '1', 'yes')
+    setup_aws_credentials(use_instance_role=use_instance_role)
+except ImportError:
+    pass
+
 # Import AutoG-S components
 try:
     from services.simple_autog_service import SimpleAutoGService
@@ -329,7 +337,7 @@ def render_sidebar():
             # Show masked credential info
             st.info(f"🔑 Access Key: `{aws_access_key[:-4]}...` | Region: `{aws_region}`")
             if aws_session_token:
-                st.info("🔑 Session token present (temporary credentials)")
+                st.info("🔑 Session token present")
         else:
             st.error("❌ AWS credentials not found in environment variables")
             st.session_state.aws_credentials_valid = False
