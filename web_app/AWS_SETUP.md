@@ -19,7 +19,9 @@ If running on an EC2 instance, you can use an IAM instance role instead of manag
 
 This is the most secure method for EC2 deployments as credentials are automatically rotated.
 
-### Method 2: Using AWS CLI (Recommended for Local Development)
+### Method 2: Using AWS CLI
+
+AWS CLI stores credentials in `~/.aws/credentials` which boto3 (used by the app) automatically reads. This method works for both local and remote environments.
 
 1. **Install AWS CLI** (if not already installed):
    ```bash
@@ -48,9 +50,9 @@ This is the most secure method for EC2 deployments as credentials are automatica
    aws sts get-caller-identity
    ```
 
-### Method 3: Environment Variables
+### Method 3: Environment Variables (Alternative to AWS CLI)
 
-Set the following environment variables in your terminal:
+If you prefer not to use AWS CLI, set environment variables directly in your terminal:
 
 ```bash
 export AWS_ACCESS_KEY_ID=<your_access_key_here>
