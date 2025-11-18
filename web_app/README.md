@@ -27,7 +27,7 @@ export PYTHONPATH=$(pwd)/multi-table-benchmark
      export AWS_SECRET_ACCESS_KEY="<your-secret-key>"
      ```
    - **EC2 instance role**: Use `--use-instance-role` flag or set `USE_INSTANCE_ROLE=true`
-
+   - **Detailed setup guide**: See [AWS_SETUP.md](AWS_SETUP.md) for comprehensive instructions
 
 ### Running the Web App
 

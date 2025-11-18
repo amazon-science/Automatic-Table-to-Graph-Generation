@@ -5,7 +5,21 @@ The AutoG-S web app requires AWS credentials to access AWS Bedrock for LLM proce
 
 ## Setup Methods
 
-### Method 1: Using AWS CLI (Recommended)
+### Method 1: EC2 Instance Role (For EC2 Deployments)
+
+If running on an EC2 instance, you can use an IAM instance role instead of managing credentials:
+
+1. **Attach IAM role to your EC2 instance** with Bedrock permissions
+2. **Run with instance role flag**:
+   ```bash
+   python run_autogs_webapp.py --use-instance-role
+   # Or for direct Streamlit:
+   USE_INSTANCE_ROLE=true streamlit run AutoGS_WebApp.py
+   ```
+
+This is the most secure method for EC2 deployments as credentials are automatically rotated.
+
+### Method 2: Using AWS CLI (Recommended for Local Development)
 
 1. **Install AWS CLI** (if not already installed):
    ```bash
@@ -34,7 +48,7 @@ The AutoG-S web app requires AWS credentials to access AWS Bedrock for LLM proce
    aws sts get-caller-identity
    ```
 
-### Method 2: Environment Variables
+### Method 3: Environment Variables
 
 Set the following environment variables in your terminal:
 
@@ -45,7 +59,7 @@ export AWS_SESSION_TOKEN=<your_session_token_here>  # Optional for temporary cre
 export AWS_DEFAULT_REGION=us-west-2
 ```
 
-### Method 3: Using the Setup Script
+### Method 4: Using the Setup Script
 
 Run the provided setup script:
 
@@ -71,7 +85,11 @@ Once your AWS credentials are configured:
 
 ```bash
 cd web_app
+# Using environment variables (default):
 python run_autogs_webapp.py
+
+# Using EC2 instance role:
+python run_autogs_webapp.py --use-instance-role
 ```
 
 The web app will automatically detect and validate your AWS credentials.
