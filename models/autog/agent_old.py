@@ -161,18 +161,18 @@ class AutoG_Agent():
     
     def calculate_deepjoin(self, rdb_dataset):
         """
-            Calculate the deepjoin with in-memory caching for performance
+            Calculate the deepjoin with in-memory caching for efficiency
         """
         if self.jtd_k == 0:
             return ""
         
         # Check memory cache first (fastest)
         if self._deepjoin_cache is not None:
-            typer.echo("Load the deepjoin from memory")
+            typer.echo("Load the deepjoin analysis results from memory")
             result = self._deepjoin_cache
         # Then check disk cache
         elif os.path.exists(os.path.join(self.path_to_file, 'deepjoin.pkl')) and not self.recalculate:
-            typer.echo("Load the deepjoin from disk cache")
+            typer.echo("Load the deepjoin analysis results from disk cache")
             result = joblib.load(os.path.join(self.path_to_file, 'deepjoin.pkl'))
             self._deepjoin_cache = result  # Cache in memory for next rounds
         elif self.recalculate:
