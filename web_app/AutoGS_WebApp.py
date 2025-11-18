@@ -560,7 +560,8 @@ def render_file_upload():
             df = load_file_to_dataframe(uploaded_file)
             if df is not None:
                 table_name = os.path.splitext(uploaded_file.name)[0]
-                new_dataframes[table_name] = df
+                # Store as tuple: (DataFrame, original_filename)
+                new_dataframes[table_name] = (df, uploaded_file.name)
         
         # Update session state to match widget (using deduplicated files)
         st.session_state.dataframes = new_dataframes
@@ -602,7 +603,7 @@ def render_file_upload():
     
     if current_dataframes:
         st.success(f"✅ {len(current_dataframes)} table(s) loaded")
-        for table_name, df in current_dataframes.items():
+        for table_name, (df, filename) in current_dataframes.items():
             st.markdown(f"- **{table_name}**: {df.shape[0]:,} rows × {df.shape[1]} columns")
         
         # Only disable buttons during processing, not after
@@ -657,8 +658,8 @@ def render_data_preview():
     st.markdown('<div class="section-header">📋 Data Preview</div>', unsafe_allow_html=True)
     
     # Summary metrics
-    total_rows = sum(df.shape[0] for df in st.session_state.dataframes.values())
-    total_cols = sum(df.shape[1] for df in st.session_state.dataframes.values())
+    total_rows = sum(df.shape[0] for df, _ in st.session_state.dataframes.values())
+    total_cols = sum(df.shape[1] for df, _ in st.session_state.dataframes.values())
     
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -671,7 +672,7 @@ def render_data_preview():
     # Data preview tabs
     tabs = st.tabs(list(st.session_state.dataframes.keys()))
     
-    for i, (table_name, df) in enumerate(st.session_state.dataframes.items()):
+    for i, (table_name, (df, filename)) in enumerate(st.session_state.dataframes.items()):
         with tabs[i]:
             col1, col2 = st.columns([3, 1])
             
@@ -1462,7 +1463,7 @@ def run_autogs(config: TaskConfig):
                 if config.use_custom_task:
                     f.write(f"- Custom Task: {config.custom_task}\n")
                 f.write(f"\nDataframes:\n")
-                for name, df in st.session_state.dataframes.items():
+                for name, (df, filename) in st.session_state.dataframes.items():
                     f.write(f"- {name}: {df.shape} ({df.memory_usage(deep=True).sum() / 1024**2:.1f} MB)\n")
                 f.write(f"\nPython Path:\n")
                 import sys

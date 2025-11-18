@@ -42,7 +42,7 @@ python run_autogs_webapp.py
 If you prefer to run Streamlit directly, you'll need to set the PYTHONPATH for all required modulesst:
 ```bash
 # From the root directory (Automatic-Table-to-Graph-Generation)
-export PYTHONPATH=$(pwd):$(pwd)/multi-table-benchmark:$(pwd)/dbinfer:$(pwd)/models:$(pwd)/prompts:$(pwd)/web_app
+export PYTHONPATH=$(pwd):$(pwd)/multi-table-benchmark
 cd web_app
 streamlit run AutoGS_WebApp.py
 ```
@@ -75,7 +75,7 @@ streamlit run AutoGS_WebApp.py
 ## Troubleshooting
 
 1. **Import Errors**: Make sure you're in the `autog-cpu` conda environment and PYTHONPATH is set correctly.
-   - **Required**: From root directory, run `export PYTHONPATH=$(pwd)/multi-table-benchmark`.
+   - **Required**: From root directory, run `export PYTHONPATH=$(pwd):$(pwd)/multi-table-benchmark`.
 2. **AWS Errors**: Verify your AWS credentials and Bedrock access.
 3. **Memory Issues**: Large datasets may require more RAM.
 4. **Path Issues**: Ensure you're running from the correct directory (web_app/).

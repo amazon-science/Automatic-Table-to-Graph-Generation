@@ -141,6 +141,9 @@ class AutoG_Agent():
         self.recalculate = recalculate
         self.round = 0
         
+        ## Memory cache for DeepJoin results (performance optimization)
+        self._deepjoin_cache = None
+        
         ## by default, we use the default prompts
         self.icl_demonstrations = []
         self.history = []
@@ -158,28 +161,38 @@ class AutoG_Agent():
     
     def calculate_deepjoin(self, rdb_dataset):
         """
-            Calculate the deepjoin
+            Calculate the deepjoin with in-memory caching for efficiency
         """
         if self.jtd_k == 0:
             return ""
-        # import ipdb; ipdb.set_trace()
-        if os.path.exists(os.path.join(self.path_to_file, 'deepjoin.pkl')) and not self.recalculate:
-            typer.echo("Load the deepjoin from cache")
-            result=joblib.load(os.path.join(self.path_to_file, 'deepjoin.pkl'))
+        
+        # Check memory cache first (fastest)
+        if self._deepjoin_cache is not None:
+            typer.echo("Load the deepjoin analysis results from memory")
+            result = self._deepjoin_cache
+        # Then check disk cache
+        elif os.path.exists(os.path.join(self.path_to_file, 'deepjoin.pkl')) and not self.recalculate:
+            typer.echo("Load the deepjoin analysis results from disk cache")
+            result = joblib.load(os.path.join(self.path_to_file, 'deepjoin.pkl'))
+            self._deepjoin_cache = result  # Cache in memory for next rounds
         elif self.recalculate:
             typer.echo("First try to see the deepjoin state")
             if os.path.exists(os.path.join(self.path_to_file, f'deepjoin{self.round}.pkl')):
                 result = joblib.load(os.path.join(self.path_to_file, f'deepjoin{self.round}.pkl'))
+                self._deepjoin_cache = result  # Cache in memory for next rounds
             else:
                 typer.echo("Calculate the deepjoin")
                 model = load_pretrain_jtd_lm(self.lm_path)
                 result = join_discovery(rdb_dataset, model)
+                self._deepjoin_cache = result  # Cache in memory for next rounds
                 joblib.dump(result, os.path.join(self.path_to_file, f'deepjoin{self.round}.pkl'))
         else:
             typer.echo("Calculate the deepjoin")
             model = load_pretrain_jtd_lm(self.lm_path)
             result = join_discovery(rdb_dataset, model)
+            self._deepjoin_cache = result  # Cache in memory for next rounds
             joblib.dump(result, os.path.join(self.path_to_file, 'deepjoin.pkl'))
+        
         ## turn numerical result into prompts
         result_prompt = format_top_k_similarities(rdb_dataset, result, self.jtd_k)
         return result_prompt

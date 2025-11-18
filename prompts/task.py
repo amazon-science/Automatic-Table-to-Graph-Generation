@@ -13,7 +13,14 @@ task_description = {
         "ratings": "This task is to predict user's ratings on movies given movie information and movie-user structural information"
     },
     "avs": {
-        "repeater": "This task is to predict whether a user will repeat a purchase given the user's purchase history and user-item structural information"
+        "repeater": "This task is to predict whether a user will repeat a purchase given the user's purchase history and user-item structural information",
+        "relation": "This task is to find the primary keys and foreign keys among the given tables.",
+        "kg": "This task is to detect and extract entities (e.g., Paper, Author, Product, Customer, Order, etc.) and relationships (e.g., written_by, belongs_to, purchased, cites, employed_by, etc.) from the given tables to construct a knowledge graph that represents the underlying data semantics.",
+        "kg2": "This task is to detect and extract entities and relationships from the given tables to construct a knowledge graph that represents the underlying data semantics. Regarding entity Identification, to identify potential entities represented in the tables. Entities typically correspond to key columns (unique identifiers such as 'paper_id', 'author_id', 'product_id', 'customer_id', etc.). For each entity, determine its type (e.g., Paper, Author, Product, Customer, etc.). Regarding relationship extraction, to identify relationships within a single table (e.g., 'Paper_writer' --> 'Author', etc.), and to identify relationships across multiple tables via foreign keys, column references, or shared identifiers. Each relationship should connect two entities using a verb phrase or predicate that expresses their link (e.g., written_by, belongs_to, purchased, cites, employed_by, etc.)."
+    },
+    "custom_mag": {
+        "venue": "This task is to predict the venue of a paper given the paper's title, abstract, authors, and publication year. \
+        You may use the meta relations between papers, authors, topics, and institutions to improve the performance"
     },
     "ieeecis": {
         "fraud": "This task is to predict whether a transaction is fraudulent given the transaction information and user-transaction structural information"
@@ -32,8 +39,13 @@ task_description = {
         "upvote": "The task is to predict the Target column of table Posts, which means predicting whether the post will be upvoted or not.", 
         "churn": "The task is to predict the Target column of table Users, which means predicting whether the user will churn or not."
     },
+    "ads": {
+        "kg": "This task is to detect and extract entities and relationships from the given tables to construct a knowledge graph that represents the underlying data semantics. Regarding entity Identification, to identify potential entities represented in the tables. Entities typically correspond to key columns (unique identifiers such as 'node_id', 'customer_id', 'product_id', 'merchant_id', 'marketplace_id', etc.). For each entity, determine its type (e.g., Node, Customer, Product, Merchant, Marketplace, etc.). Regarding relationship extraction, to identify relationships within a single table (e.g., from Purchase table, 'order_id' contains 'asin', 'asin' purchased in 'order_id', etc.), and to identify relationships across multiple tables via foreign keys, column references, or shared identifiers. Each relationship should connect two entities using a verb phrase or predicate that expresses their link (e.g., sold_by, purchases, purchased_in, located_in, ordered_by, bought, etc.)."
+    },
     "custom": {
-        "relation": "This task is to find the primary keys and foreign keys among the given tables."
+        "relation": "This task is to find the primary keys and foreign keys among the given tables.",
+        "kg": "This task is to detect and extract entities and relationships from the given tables to construct a knowledge graph that represents the underlying data semantics.",
+        "kg2": "This task is to detect and extract entities and relationships from the given tables to construct a knowledge graph that represents the underlying data semantics. Regarding entity Identification, to identify potential entities represented in the tables and determine its type. Regarding relationship extraction, to identify relationships within a single table, and to identify relationships across multiple tables via foreign keys, column references, or shared identifiers."
     },
     "custom_mag": {
         "venue": "This task is to predict the venue of a paper given the paper's title, abstract, authors, and publication year. \

@@ -10,6 +10,31 @@ import argparse
 import socket
 from pathlib import Path
 
+try:
+    import tomli as tomllib  # Python < 3.11
+except ImportError:
+    try:
+        import tomllib  # Python >= 3.11
+    except ImportError:
+        import toml as tomllib  # Fallback to toml package
+
+def load_streamlit_config(config_path):
+    """Load Streamlit config.toml file"""
+    try:
+        if hasattr(tomllib, 'load'):
+            # tomllib (Python 3.11+) requires binary mode
+            with open(config_path, 'rb') as f:
+                return tomllib.load(f)
+        else:
+            # toml package uses text mode
+            with open(config_path, 'r') as f:
+                return tomllib.load(f)
+    except FileNotFoundError:
+        return {}
+    except Exception as e:
+        print(f"⚠️  Warning: Could not load config.toml: {e}")
+        return {}
+
 def find_free_port(start_port=8501, max_attempts=10):
     """Find a free port starting from start_port"""
     for port in range(start_port, start_port + max_attempts):
@@ -31,7 +56,16 @@ def main():
     
     args = parser.parse_args()
     
-    # Determine port to use
+    # Get the web app file path
+    current_dir = Path(__file__).parent
+    webapp_path = current_dir / "AutoGS_WebApp.py"
+    config_path = current_dir / ".streamlit" / "config.toml"
+    
+    # Load config.toml
+    config = load_streamlit_config(config_path)
+    server_config = config.get('server', {})
+    
+    # Determine port to use (CLI > config.toml > default)
     if args.port:
         if args.no_auto_port:
             port = args.port
@@ -45,12 +79,17 @@ def main():
                 print(f"⚠️  Port {args.port} is busy, finding next available port...")
                 port = find_free_port(args.port)
     else:
-        # Auto-detect starting from 8501
-        port = find_free_port(8501)
+        # Use port from config.toml if available
+        port = server_config.get('port')
     
-    # Get the web app file path
-    current_dir = Path(__file__).parent
-    webapp_path = current_dir / "AutoGS_WebApp.py"
+    # Determine host (CLI > config.toml > default)
+    if args.host != "0.0.0.0":
+        host = args.host
+    else:
+        host = server_config.get('address', '0.0.0.0')
+    
+    # Determine headless mode (config.toml > default)
+    headless = server_config.get('headless', True)
     
     # Check environment
     conda_env = os.environ.get('CONDA_DEFAULT_ENV', 'unknown')
@@ -78,18 +117,40 @@ def main():
     # Construct streamlit command
     cmd = [
         sys.executable, "-m", "streamlit", "run", str(webapp_path),
-        f"--server.port={port}",
-        f"--server.address={args.host}",
-        "--server.headless=true"
     ]
+    
+    # Add server configuration (only if different from config.toml or explicitly set)
+    if port is not None:
+        cmd.append(f"--server.port={port}")
+    if host != "0.0.0.0" or args.host != "0.0.0.0":
+        cmd.append(f"--server.address={host}")
+    if headless:
+        cmd.append("--server.headless=true")
     
     if args.theme:
         cmd.append(f"--theme.base={args.theme}")
     
     try:
-        print(f"🚀 Starting AutoG-S Web App on http://{args.host}:{port}")
-        if port != args.port and args.port:
-            print(f"   (Originally requested port {args.port} was busy)")
+        # Display startup info
+        if port is not None:
+            print(f"🚀 Starting AutoG-S Web App on http://{host}:{port}")
+            if port != args.port and args.port:
+                print(f"   (Originally requested port {args.port} was busy)")
+            if not args.port and server_config.get('port'):
+                print(f"   Using port from config.toml")
+        else:
+            print(f"🚀 Starting AutoG-S Web App on http://{host}:<default port>")
+            print("   Using default Streamlit port (8501)")
+        
+        # Show config source
+        config_sources = []
+        if server_config:
+            config_sources.append("config.toml")
+        if args.port or args.host != "0.0.0.0" or args.theme:
+            config_sources.append("CLI args")
+        if config_sources:
+            print(f"   Config from: {', '.join(config_sources)}")
+        
         print("   Press Ctrl+C to stop")
         subprocess.run(cmd, check=True)
     except KeyboardInterrupt:
