@@ -32,6 +32,7 @@ export PYTHONPATH=$(pwd)/multi-table-benchmark
 ### Running the Web App
 
 #### Option 1: Using the startup script (Recommended)
+The startup script provides helpful feedback about credentials and environment setup:
 ```bash
 cd web_app
 python run_autogs_webapp.py
@@ -41,7 +42,7 @@ python run_autogs_webapp.py --use-instance-role
 ```
 
 #### Option 2: Direct Streamlit command
-If you prefer to run Streamlit directly, you'll need to set the PYTHONPATH for all required modulesst:
+If you prefer to run Streamlit directly (no startup feedback), you'll need to set the PYTHONPATH for all required modules:
 ```bash
 # From the root directory (Automatic-Table-to-Graph-Generation)
 export PYTHONPATH=$(pwd):$(pwd)/multi-table-benchmark

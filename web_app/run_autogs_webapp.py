@@ -110,6 +110,10 @@ def main():
         from webutils.aws_credentials import setup_aws_credentials
         if setup_aws_credentials(use_instance_role=args.use_instance_role):
             print("✅ AWS credentials configured")
+            aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+            region = os.environ.get('AWS_DEFAULT_REGION')
+            print(f"   Access Key: {aws_access_key[:-4]}...")
+            print(f"   Region: {region}")
         else:
             if args.use_instance_role:
                 print("⚠️  No AWS credentials found from EC2 instance role")
