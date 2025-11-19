@@ -20,31 +20,37 @@ export PYTHONPATH=$(pwd)/multi-table-benchmark
 **Note**: The PYTHONPATH export is required for the backend imports to work correctly.
 
 2. **AWS Credentials**: You'll need AWS Bedrock access for using LLM models:
-   - Set environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`
+   - **Environment variables** (default):
+     ```bash
+     export AWS_DEFAULT_REGION="<your-region>"
+     export AWS_ACCESS_KEY_ID="<your-access-key>"
+     export AWS_SECRET_ACCESS_KEY="<your-secret-key>"
+     ```
+   - **EC2 instance role**: Use `--use-instance-role` flag or set `USE_INSTANCE_ROLE=true`
    - **Detailed setup guide**: See [AWS_SETUP.md](AWS_SETUP.md) for comprehensive instructions
-
-```bash
-export AWS_DEFAULT_REGION="<your-region>"
-export AWS_ACCESS_KEY_ID="<your-access-key>"
-export AWS_SECRET_ACCESS_KEY="<your-secret-key>"
-```
-
 
 ### Running the Web App
 
 #### Option 1: Using the startup script (Recommended)
+The startup script provides helpful feedback about credentials and environment setup:
 ```bash
 cd web_app
 python run_autogs_webapp.py
+
+# To use EC2 instance role for AWS credentials:
+python run_autogs_webapp.py --use-instance-role
 ```
 
 #### Option 2: Direct Streamlit command
-If you prefer to run Streamlit directly, you'll need to set the PYTHONPATH for all required modulesst:
+If you prefer to run Streamlit directly (no startup feedback), you'll need to set the PYTHONPATH for all required modules:
 ```bash
 # From the root directory (Automatic-Table-to-Graph-Generation)
 export PYTHONPATH=$(pwd):$(pwd)/multi-table-benchmark
 cd web_app
 streamlit run AutoGS_WebApp.py
+
+# To use EC2 instance role for AWS credentials:
+USE_INSTANCE_ROLE=true streamlit run AutoGS_WebApp.py
 ```
 
 ## Usage Steps
