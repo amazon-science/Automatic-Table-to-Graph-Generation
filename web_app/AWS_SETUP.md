@@ -50,7 +50,7 @@ AWS CLI stores credentials in `~/.aws/credentials` which boto3 (used by the app)
    aws sts get-caller-identity
    ```
 
-### Method 3: Environment Variables (Alternative to AWS CLI)
+### Method 3: Environment Variables (An alternative to AWS CLI)
 
 If you prefer not to use AWS CLI, set environment variables directly in your terminal:
 
