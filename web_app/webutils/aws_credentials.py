@@ -38,6 +38,19 @@ def get_instance_role_name(token: str, timeout: int = 1) -> Optional[str]:
         return None
 
 
+def get_instance_region(token: str, timeout: int = 1) -> Optional[str]:
+    """Get the region of the EC2 instance"""
+    try:
+        req = urllib.request.Request(
+            'http://169.254.169.254/latest/meta-data/placement/region',
+            headers={'X-aws-ec2-metadata-token': token}
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            return response.read().decode('utf-8').strip()
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return None
+
+
 def get_instance_role_credentials(token: str, role_name: str, timeout: int = 1) -> Optional[Dict[str, str]]:
     """Get temporary credentials from the instance role"""
     try:
@@ -51,12 +64,14 @@ def get_instance_role_credentials(token: str, role_name: str, timeout: int = 1) 
             
             # Validate credentials
             if creds.get('Code') == 'Success':
+                # Get region from instance metadata or env var
+                region = get_instance_region(token) or os.environ.get('AWS_DEFAULT_REGION')
                 return {
                     'access_key': creds.get('AccessKeyId'),
                     'secret_key': creds.get('SecretAccessKey'),
                     'session_token': creds.get('Token'),
                     'expiration': creds.get('Expiration'),
-                    'region': os.environ.get('AWS_DEFAULT_REGION'),  # Get from env if set
+                    'region': region,
                     'source': 'instance_role'
                 }
     except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError, KeyError):
