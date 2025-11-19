@@ -64,8 +64,8 @@ def get_instance_role_credentials(token: str, role_name: str, timeout: int = 1) 
             
             # Validate credentials
             if creds.get('Code') == 'Success':
-                # Get region from instance metadata or env var
-                region = get_instance_region(token) or os.environ.get('AWS_DEFAULT_REGION')
+                # Get region from instance metadata
+                region = get_instance_region(token)
                 return {
                     'access_key': creds.get('AccessKeyId'),
                     'secret_key': creds.get('SecretAccessKey'),
@@ -149,13 +149,14 @@ def setup_aws_credentials(use_instance_role: bool = False) -> bool:
             
             if creds.get('session_token'):
                 os.environ['AWS_SESSION_TOKEN'] = creds['session_token']
+            
+            # Set region from instance metadata if available
+            if creds.get('region'):
+                os.environ['AWS_DEFAULT_REGION'] = creds['region']
         
-        # Set default region if not already set
-        current_region = os.environ.get('AWS_DEFAULT_REGION')
-        if not current_region:
-            # Use region from credentials if available, otherwise default to us-west-2
-            default_region = creds.get('region') or 'us-west-2'
-            os.environ['AWS_DEFAULT_REGION'] = default_region
+        # Set default region if still not set
+        if not os.environ.get('AWS_DEFAULT_REGION'):
+            os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
         
         return True
     
