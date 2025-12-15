@@ -137,8 +137,11 @@ class DBBRDBDataset:
                 elif col_meta.dtype == DBBColumnDType.text_t:
                     col = Column(col_name, String)
                 elif col_meta.dtype == DBBColumnDType.foreign_key:
+                    # Handle link_to format: "Table.Column"
+                    # Use split with maxsplit=1 to handle column names that contain dots (assume no dot in table name)
+                    # e.g., "Table.ColumnName.2" -> ["Table", "ColumnName.2"]
                     col = Column(col_name, None, ForeignKey(col_meta.link_to))
-                    link_tbl, link_col = col_meta.link_to.split('.')
+                    link_tbl, link_col = col_meta.link_to.split('.', 1)
                     referred_pks[link_tbl] = link_col
                 elif col_meta.dtype == DBBColumnDType.primary_key:
                     col = Column(col_name, Uuid, primary_key=True)
